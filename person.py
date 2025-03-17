@@ -11,6 +11,9 @@ class Admin:
 
     def remove_employee(self, employee_id):
         self.school.remove_employee(employee_id)
+    
+    def update_employee(self, employee_id, name=None, contact=None, position=None, username=None, password=None):
+        return self.school.update_employee(employee_id, name, contact, position, username, password)
 
     def add_student(self, name, class_name):
         self.school.add_student(name, class_name)

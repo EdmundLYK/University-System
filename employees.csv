@@ -1,5 +1,5 @@
 employee_id,name,contact,position,username,password,role
 1,Admin User,admin@example.com,admin,admin1,admin123,admin
-2,edmund,01234,admin,ed,123,admin
-3,abd,1234,staff,,,staff
+2,edmund,01123,admin,ed,012,admin
+3,abc,1234,staff,NaN,,staff
 4,jo,0123,teacher,jo,123,teacher

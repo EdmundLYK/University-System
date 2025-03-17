@@ -30,6 +30,7 @@ class AdminDashboard(tk.Frame):
         tk.Label(self, text="Admin Dashboard", font=("Arial", 16)).pack(pady=10)
 
         tk.Button(self, text="Add Employee", command=self.add_employee).pack(pady=5)
+        tk.Button(self, text="Update Employee", command=self.update_employee).pack(pady=5)
         tk.Button(self, text="Remove Employee", command=self.remove_employee).pack(pady=5)
         tk.Button(self, text="Add Student", command=self.add_student).pack(pady=5)
         tk.Button(self, text="Assign Teacher to Class", command=self.assign_teacher).pack(pady=5)
@@ -58,6 +59,27 @@ class AdminDashboard(tk.Frame):
         employee_id = self.admin.add_employee(name, contact, position, username, password)
         messagebox.showinfo("Success", f"Employee added with ID: {employee_id}")
 
+    def update_employee(self):
+        employee_id = simpledialog.askinteger("Input", "Enter employee ID to update:")
+        if not employee_id:
+            return
+    
+        if employee_id not in self.admin.school.employees['employee_id'].values:
+            messagebox.showerror("Error", "Employee ID not found.")
+            return
+
+        emp = self.admin.school.employees[self.admin.school.employees['employee_id'] == employee_id].iloc[0]
+
+        name = simpledialog.askstring("Input", "Enter new name (leave blank to keep current):", initialvalue=emp['name'])
+        contact = simpledialog.askstring("Input", "Enter new contact (leave blank to keep current):", initialvalue=emp['contact'])
+        position = simpledialog.askstring("Input", "Enter new position (leave blank to keep current):", initialvalue=emp['position'])
+        username = simpledialog.askstring("Input", "Enter new username (leave blank to keep current):", initialvalue=emp['username'])
+        password = simpledialog.askstring("Input", "Enter new password (leave blank to keep current):", show='*')
+
+        self.admin.update_employee(employee_id, name, contact, position, username, password)
+        messagebox.showinfo("Success", f"Employee ID {employee_id} details updated successfully.")
+
+    
     def remove_employee(self):
         employee_id = simpledialog.askinteger("Input", "Enter employee ID to remove:")
         if employee_id:

@@ -74,6 +74,25 @@ class School:
         self.students = pd.concat([self.students, pd.DataFrame([student_details])], ignore_index=True)
         self.save_data()
 
+    def update_employee(self, employee_id, name=None, contact=None, position=None, username=None, password=None):
+        if employee_id not in self.employees['employee_id'].values:
+            return False
+        index = self.employees[self.employees['employee_id'] == employee_id].index[0]
+
+        if name:
+            self.employees.at[index, 'name'] = name
+        if contact:
+            self.employees.at[index, 'contact'] = contact
+        if position:
+            self.employees.at[index, 'position'] = position
+            # Adjust the role based on position
+            self.employees.at[index, 'role'] = position if position in ['admin', 'teacher'] else 'staff'
+        if username:
+            self.employees.at[index, 'username'] = username
+        if password:
+            self.employees.at[index, 'password'] = password
+        self.save_data()
+
     def assign_teacher_to_class(self, class_name, teacher_id):
         if teacher_id in self.employees['employee_id'].values:
             schedule = {'class': class_name, 'teacher_id': teacher_id}
