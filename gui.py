@@ -49,7 +49,7 @@ class AdminDashboard(tk.Frame):
         password = None
         if position in ['admin', 'teacher']:
             username = simpledialog.askstring("Input", "Enter username:")
-            if not username or username in self.admin.school.users['username'].values:
+            if not username or username in self.admin.school.employees['username'].values:
                 messagebox.showerror("Error", "Username invalid or already taken")
                 return
             password = simpledialog.askstring("Input", "Enter password:", show='*')

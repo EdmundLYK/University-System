@@ -6,9 +6,8 @@ class School:
     def __init__(self):
         # Define CSV files and their headers
         self.csv_files = [
-            ('employees.csv', ['employee_id', 'name', 'contact', 'position']),
+            ('employees.csv', ['employee_id', 'name', 'contact', 'position', 'username', 'password', 'role']),
             ('students.csv', ['student_id', 'name', 'class']),
-            ('users.csv', ['username', 'password', 'role']),
             ('attendance.csv', ['date', 'class', 'student_id', 'status']),
             ('schedules.csv', ['class', 'teacher_id'])
         ]
@@ -16,9 +15,8 @@ class School:
         for filename, headers in self.csv_files:
             self.ensure_csv_exists(filename, headers)
         # Initialize DataFrames
-        self.employees = pd.DataFrame(columns=['employee_id', 'name', 'contact', 'position'])
+        self.employees = pd.DataFrame(columns=['employee_id', 'name', 'contact', 'position', 'username', 'password', 'role'])
         self.students = pd.DataFrame(columns=['student_id', 'name', 'class'])
-        self.users = pd.DataFrame(columns=['username', 'password', 'role'])
         self.attendance = pd.DataFrame(columns=['date', 'class', 'student_id', 'status'])
         self.schedules = pd.DataFrame(columns=['class', 'teacher_id'])
         self.load_data()
@@ -36,7 +34,6 @@ class School:
         for file, attr in [
             ('employees.csv', 'employees'),
             ('students.csv', 'students'),
-            ('users.csv', 'users'),
             ('attendance.csv', 'attendance'),
             ('schedules.csv', 'schedules')
         ]:
@@ -47,17 +44,22 @@ class School:
         """Save all DataFrames to CSV files."""
         self.employees.to_csv('employees.csv', index=False)
         self.students.to_csv('students.csv', index=False)
-        self.users.to_csv('users.csv', index=False)
         self.attendance.to_csv('attendance.csv', index=False)
         self.schedules.to_csv('schedules.csv', index=False)
 
     def add_employee(self, name, contact, position, username=None, password=None):
         new_id = 1 if self.employees.empty else self.employees['employee_id'].max() + 1
-        employee_details = {'employee_id': new_id, 'name': name, 'contact': contact, 'position': position}
+        role = position if position in ['admin', 'teacher'] else 'staff'
+        employee_details = {
+            'employee_id': new_id,
+            'name': name,
+            'contact': contact,
+            'position': position,
+            'username': username if position in ['admin', 'teacher'] else None,
+            'password': password if position in ['admin', 'teacher'] else None,
+            'role': role
+        }
         self.employees = pd.concat([self.employees, pd.DataFrame([employee_details])], ignore_index=True)
-        if position in ['teacher', 'admin'] and username and password:
-            user_details = {'username': username, 'password': password, 'role': position}
-            self.users = pd.concat([self.users, pd.DataFrame([user_details])], ignore_index=True)
         self.save_data()
         return new_id
 

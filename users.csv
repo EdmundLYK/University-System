@@ -1,5 +1,0 @@
-user_id,username,password,role
-1.0,admin,test,admin
-2.0,teacher,123,teacher
-,admin2,admin,admin
-,admin3,test,admin
