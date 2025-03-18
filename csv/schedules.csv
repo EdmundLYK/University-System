@@ -1,4 +1,4 @@
 classID,ClassName,Time,Day,Duration,MaxStudents,TeacherID,Subject
-1,2
-test,1
-edmund,2
+1,2,,,,,,
+test,1,,,,,,
+edmund,2,,,,,,

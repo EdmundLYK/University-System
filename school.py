@@ -67,7 +67,8 @@ class School:
 
     def remove_employee(self, employee_id):
         self.employees = self.employees[self.employees['employee_id'] != employee_id]
-        self.schedules = self.schedules[self.schedules['teacher_id'] != employee_id]
+        if 'teacher_id' in self.schedules.columns:
+            self.schedules = self.schedules[self.schedules['teacher_id'] != employee_id]
         self.save_data()
 
     def update_employee(self, employee_id, name=None, contact=None, position=None, username=None, password=None):

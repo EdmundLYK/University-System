@@ -1,196 +1,437 @@
 import tkinter as tk
-from tkinter import messagebox, simpledialog
-from person import Admin, Teacher
+from tkinter import messagebox
+from pathlib import Path
+from tkinter import Canvas, Entry, Button, PhotoImage
+from person import Admin, Teacher  # Ensure these classes are defined
 
+# ------------------ Paths and Asset Helper ------------------
+OUTPUT_PATH = Path(__file__).parent
+ASSETS_PATH = OUTPUT_PATH / "assets"
+
+def relative_to_assets(path: str) -> Path:
+    return ASSETS_PATH / Path(path)
+
+# ------------------ FormWindow Helper Class ------------------
+class FormWindow(tk.Toplevel):
+    """
+    A Toplevel window (1000x500) with a dark red (#8B0000) background and the same background image as the login page.
+    A vertical form is generated based on the provided fields (list of tuples: (Field Label, default value)).
+    When the user presses "Submit" or Enter, the form's values are passed to submit_callback.
+    If submit_callback returns True, the window closes; otherwise it remains open.
+    This window is modal (transient with grab_set) and always appears centered on the screen.
+    """
+    def __init__(self, parent, title, fields, submit_callback):
+        super().__init__(parent)
+        self.title(title)
+        # Set window size and center it
+        width, height = 1000, 500
+        x = (self.winfo_screenwidth() - width) // 2
+        y = (self.winfo_screenheight() - height) // 2
+        self.geometry(f"{width}x{height}+{x}+{y}")
+        self.resizable(False, False)
+        self.configure(bg="#8B0000")
+        
+        # Make the window modal and transient so it stays on top of the dashboard
+        self.transient(parent)
+        self.grab_set()
+        
+        # Create a canvas covering the window
+        self.canvas = Canvas(self, bg="#8B0000", height=500, width=1000, bd=0, 
+                             highlightthickness=0, relief="ridge")
+        self.canvas.place(x=0, y=0)
+        
+        # Place the background photo (centered at (500,250))
+        self.bg_image = PhotoImage(file=relative_to_assets("image_1.png"))
+        self.canvas.bg_image = self.bg_image  # Keep reference
+        self.canvas.create_image(500, 250, image=self.bg_image)
+        
+        # Create form fields (labels and entries)
+        self.entries = {}
+        y_start = 100
+        y_gap = 60
+        for i, (field_label, default_val) in enumerate(fields):
+            y_pos = y_start + i * y_gap
+            lbl = tk.Label(self, text=field_label, font=("Inter", 20), bg="#8B0000", fg="#FFFFFF")
+            self.canvas.create_window(200, y_pos, window=lbl, anchor="w")
+            ent = tk.Entry(self, font=("Inter", 20), fg="#000716", bd=2)
+            if default_val is not None:
+                ent.insert(0, default_val)
+            self.entries[field_label] = ent
+            self.canvas.create_window(500, y_pos, window=ent, anchor="w", width=300, height=40)
+        
+        # Submission function
+        def on_submit():
+            result = submit_callback(self.get_values())
+            if result:
+                self.destroy()
+        
+        # Bind the Return key to submission
+        self.bind("<Return>", lambda event: on_submit())
+        
+        # Submit Button
+        submit_btn = tk.Button(self, text="Submit", font=("Inter", 20), command=on_submit)
+        self.canvas.create_window(500, y_pos + 80, window=submit_btn, anchor="center", width=150, height=50)
+    
+    def get_values(self):
+        values = {}
+        for key, ent in self.entries.items():
+            values[key] = ent.get().strip()
+        return values
+
+# ------------------ Login Page (Canvas-based) ------------------
 class LoginFrame(tk.Frame):
     def __init__(self, parent, login_callback):
-        super().__init__(parent)
+        super().__init__(parent, bg="#8B0000")  # Dark red background behind the photo
         self.login_callback = login_callback
+        self.configure(width=1000, height=700)
+        self.pack_propagate(0)
 
-        tk.Label(self, text="Username:").pack(pady=5)
-        self.username_entry = tk.Entry(self)
-        self.username_entry.pack(pady=5)
+        # Create canvas for the login design
+        self.canvas = Canvas(self, bg="#8B0000", height=700, width=1000, bd=0, 
+                             highlightthickness=0, relief="ridge")
+        self.canvas.place(x=0, y=0)
 
-        tk.Label(self, text="Password:").pack(pady=5)
-        self.password_entry = tk.Entry(self, show='*')
-        self.password_entry.pack(pady=5)
+        # Background image (centered at (500,350))
+        self.bg_image = PhotoImage(file=relative_to_assets("image_1.png"))
+        self.canvas.create_image(500, 350, image=self.bg_image)
 
-        tk.Button(self, text="Login", command=self.login).pack(pady=10)
+        # Title text
+        self.canvas.create_text(
+            170, 29, anchor="nw", 
+            text="University Management System", 
+            fill="#FFF2F2", font=("Roboto Regular", 45 * -1)
+        )
+
+        # Username label and entry background
+        self.canvas.create_text(
+            279, 171, anchor="nw", 
+            text="Username", fill="#FFF8F8", font=("Inter", 16 * -1)
+        )
+        self.entry_bg_1 = PhotoImage(file=relative_to_assets("entry_1.png"))
+        self.canvas.create_image(498.5, 184, image=self.entry_bg_1)
+        self.username_entry = Entry(
+            self, bd=0, bg="#D9D9D9", fg="#000716", 
+            highlightthickness=0, font=("Inter", 20)
+        )
+        self.username_entry.place(x=384, y=150, width=229, height=66)
+        self.username_entry.bind("<Return>", lambda event: self.login())
+
+        # Password label and entry background
+        self.canvas.create_text(
+            278, 284, anchor="nw", 
+            text="Password", fill="#FFF8F8", font=("Inter", 16 * -1)
+        )
+        self.entry_bg_2 = PhotoImage(file=relative_to_assets("entry_2.png"))
+        self.canvas.create_image(498.5, 298, image=self.entry_bg_2)
+        self.password_entry = Entry(
+            self, bd=0, bg="#D9D9D9", fg="#000716", 
+            highlightthickness=0, show="*", font=("Inter", 20)
+        )
+        self.password_entry.place(x=384, y=264, width=229, height=66)
+        self.password_entry.bind("<Return>", lambda event: self.login())
+
+        # Login button with hover effect
+        self.button_image_1 = PhotoImage(file=relative_to_assets("button_1.png"))
+        self.login_button = Button(
+            self, image=self.button_image_1, borderwidth=0, highlightthickness=0,
+            command=self.login, relief="flat"
+        )
+        self.login_button.place(x=427, y=393, width=111, height=46)
+        self.button_image_hover_1 = PhotoImage(file=relative_to_assets("button_hover_1.png"))
+        self.login_button.bind('<Enter>', self.on_hover)
+        self.login_button.bind('<Leave>', self.on_leave)
+
+    def on_hover(self, event):
+        self.login_button.config(image=self.button_image_hover_1)
+
+    def on_leave(self, event):
+        self.login_button.config(image=self.button_image_1)
 
     def login(self):
         username = self.username_entry.get()
         password = self.password_entry.get()
         self.login_callback(username, password)
 
+# ------------------ Admin Dashboard ------------------
 class AdminDashboard(tk.Frame):
     def __init__(self, parent, admin):
         super().__init__(parent)
         self.admin = admin
-
-        tk.Label(self, text="Admin Dashboard", font=("Arial", 16)).pack(pady=10)
-
-        tk.Button(self, text="Add Employee", command=self.add_employee).pack(pady=5)
-        tk.Button(self, text="Update Employee", command=self.update_employee).pack(pady=5)
-        tk.Button(self, text="Remove Employee", command=self.remove_employee).pack(pady=5)
-        tk.Button(self, text="Add Student", command=self.add_student).pack(pady=5)
-        tk.Button(self, text="Remove Student", command=self.remove_student).pack(pady=5)
-        tk.Button(self, text="Update Student", command=self.update_student).pack(pady=5)
-        tk.Button(self, text="Assign Teacher to Class", command=self.assign_teacher).pack(pady=5)
-        tk.Button(self, text="Logout", command=parent.show_login).pack(pady=5)
+        self.configure(width=1000, height=700)
+        self.pack_propagate(0)
+        
+        # Create a canvas for the dashboard background with dark red as the canvas bg
+        self.canvas = Canvas(self, width=1000, height=700, bd=0, highlightthickness=0, relief="ridge", bg="#8B0000")
+        self.canvas.pack(fill="both", expand=True)
+        self.bg_image = PhotoImage(file=relative_to_assets("image_1.png"))
+        self.canvas.create_image(500, 350, image=self.bg_image)
+        
+        # Create a frame on top to hold dashboard widgets with dark red background
+        content_frame = tk.Frame(self.canvas, bg="#8B0000")
+        self.canvas.create_window(500, 350, window=content_frame, anchor="center")
+        
+        tk.Label(content_frame, text="Admin Dashboard", font=("Arial", 24), bg="#8B0000", fg="#FFFFFF").pack(pady=10)
+        btn_font = ("Inter", 20)
+        tk.Button(content_frame, text="Add Employee", font=btn_font, command=self.add_employee).pack(pady=5)
+        tk.Button(content_frame, text="Update Employee", font=btn_font, command=self.update_employee).pack(pady=5)
+        tk.Button(content_frame, text="Remove Employee", font=btn_font, command=self.remove_employee).pack(pady=5)
+        tk.Button(content_frame, text="Add Student", font=btn_font, command=self.add_student).pack(pady=5)
+        tk.Button(content_frame, text="Remove Student", font=btn_font, command=self.remove_student).pack(pady=5)
+        tk.Button(content_frame, text="Update Student", font=btn_font, command=self.update_student).pack(pady=5)
+        tk.Button(content_frame, text="Assign Teacher to Class", font=btn_font, command=self.assign_teacher).pack(pady=5)
+        tk.Button(content_frame, text="Logout", font=btn_font, command=parent.show_login).pack(pady=5)
 
     def add_employee(self):
-        name = simpledialog.askstring("Input", "Enter name:")
-        if not name:
-            return
-        contact = simpledialog.askstring("Input", "Enter contact:")
-        if not contact:
-            return
-        position = simpledialog.askstring("Input", "Enter position (admin/teacher/staff):")
-        if not position:
-            return
-        username = None
-        password = None
-        if position in ['admin', 'teacher']:
-            username = simpledialog.askstring("Input", "Enter username:")
-            if not username or username in self.admin.school.employees['username'].values:
-                messagebox.showerror("Error", "Username invalid or already taken")
-                return
-            password = simpledialog.askstring("Input", "Enter password:", show='*')
-            if not password:
-                return
-        employee_id = self.admin.add_employee(name, contact, position, username, password)
-        messagebox.showinfo("Success", f"Employee added with ID: {employee_id}")
-
+        fields = [
+            ("Name", ""),
+            ("Contact", ""),
+            ("Position", ""),
+            ("Username", ""),
+            ("Password", "")
+        ]
+        def submit(values):
+            if not values["Name"] or not values["Contact"] or not values["Position"]:
+                messagebox.showerror("Error", "Name, Contact, and Position are required.")
+                return False
+            if values["Position"].lower() in ['admin', 'teacher'] and (not values["Username"] or not values["Password"]):
+                messagebox.showerror("Error", "Username and Password are required for admin/teacher positions.")
+                return False
+            employee_id = self.admin.add_employee(values["Name"], values["Contact"], values["Position"],
+                                                  values["Username"], values["Password"])
+            messagebox.showinfo("Success", f"Employee added with ID: {employee_id}")
+            return True
+        FormWindow(self, "Add Employee", fields, submit)
+    
     def update_employee(self):
-        employee_id = simpledialog.askinteger("Input", "Enter employee ID to update:")
-        if not employee_id:
-            return
-    
-        if employee_id not in self.admin.school.employees['employee_id'].values:
-            messagebox.showerror("Error", "Employee ID not found.")
-            return
+        fields = [
+            ("Employee ID", ""),
+            ("Name", ""),
+            ("Contact", ""),
+            ("Position", ""),
+            ("Username", ""),
+            ("Password", "")
+        ]
+        def submit(values):
+            try:
+                emp_id = int(values["Employee ID"])
+            except ValueError:
+                messagebox.showerror("Error", "Invalid Employee ID.")
+                return False
+            if emp_id not in self.admin.school.employees['employee_id'].values:
+                messagebox.showerror("Error", "Employee ID not found.")
+                return False
+            self.admin.update_employee(emp_id, values["Name"], values["Contact"],
+                                       values["Position"], values["Username"], values["Password"])
+            messagebox.showinfo("Success", f"Employee ID {emp_id} updated successfully.")
+            return True
+        FormWindow(self, "Update Employee", fields, submit)
 
-        emp = self.admin.school.employees[self.admin.school.employees['employee_id'] == employee_id].iloc[0]
-
-        name = simpledialog.askstring("Input", "Enter new name (leave blank to keep current):", initialvalue=emp['name'])
-        contact = simpledialog.askstring("Input", "Enter new contact (leave blank to keep current):", initialvalue=emp['contact'])
-        position = simpledialog.askstring("Input", "Enter new position (leave blank to keep current):", initialvalue=emp['position'])
-        username = simpledialog.askstring("Input", "Enter new username (leave blank to keep current):", initialvalue=emp['username'])
-        password = simpledialog.askstring("Input", "Enter new password (leave blank to keep current):", show='*')
-
-        self.admin.update_employee(employee_id, name, contact, position, username, password)
-        messagebox.showinfo("Success", f"Employee ID {employee_id} details updated successfully.")
-
-    
     def remove_employee(self):
-        employee_id = simpledialog.askinteger("Input", "Enter employee ID to remove:")
-        if employee_id:
-            self.admin.remove_employee(employee_id)
-            messagebox.showinfo("Success", "Employee removed")
+        fields = [("Employee ID", "")]
+        def submit(values):
+            try:
+                emp_id = int(values["Employee ID"])
+            except ValueError:
+                messagebox.showerror("Error", "Invalid Employee ID.")
+                return False
+            self.admin.remove_employee(emp_id)
+            messagebox.showinfo("Success", "Employee removed.")
+            return True
+        FormWindow(self, "Remove Employee", fields, submit)
 
     def add_student(self):
-        name = simpledialog.askstring("Input", "Enter student name:")
-        if not name:
-            return
-        age  = simpledialog.askinteger("Input", "Enter student age:")
-        if not age:
-            return
-        class_id = simpledialog.askstring("Input", "Enter class:")
-        if not class_id:
-            return
-        self.admin.add_student(name, age, class_id)
-        messagebox.showinfo("Success", "Student added")
-    
+        fields = [
+            ("Student Name", ""),
+            ("Age", ""),
+            ("Class", "")
+        ]
+        def submit(values):
+            if not values["Student Name"] or not values["Age"] or not values["Class"]:
+                messagebox.showerror("Error", "All fields are required.")
+                return False
+            try:
+                age = int(values["Age"])
+            except ValueError:
+                messagebox.showerror("Error", "Age must be a number.")
+                return False
+            self.admin.add_student(values["Student Name"], age, values["Class"])
+            messagebox.showinfo("Success", "Student added.")
+            return True
+        FormWindow(self, "Add Student", fields, submit)
+
     def remove_student(self):
-        student_id = simpledialog.askinteger("Input", "Enter student ID to remove:")
-        if student_id:
-            self.admin.remove_student(student_id)
-            messagebox.showinfo("Success", "Student removed")
+        fields = [("Student ID", "")]
+        def submit(values):
+            try:
+                std_id = int(values["Student ID"])
+            except ValueError:
+                messagebox.showerror("Error", "Invalid Student ID.")
+                return False
+            self.admin.remove_student(std_id)
+            messagebox.showinfo("Success", "Student removed.")
+            return True
+        FormWindow(self, "Remove Student", fields, submit)
 
     def update_student(self):
-        student_id = simpledialog.askinteger("Input", "Enter student ID to update:")
-        if not student_id:
-            return
-    
-        if student_id not in self.admin.school.students['student_id'].values:
-            messagebox.showerror("Error", "Student ID not found.")
-            return
+        fields = [
+            ("Student ID", ""),
+            ("Name", ""),
+            ("Age", ""),
+            ("Class", ""),
+            ("Marks", "")
+        ]
+        def submit(values):
+            try:
+                std_id = int(values["Student ID"])
+            except ValueError:
+                messagebox.showerror("Error", "Invalid Student ID.")
+                return False
+            if std_id not in self.admin.school.students['student_id'].values:
+                messagebox.showerror("Error", "Student ID not found.")
+                return False
+            self.admin.update_student(std_id, values["Name"], values["Age"], values["Class"], values["Marks"])
+            messagebox.showinfo("Success", f"Student ID {std_id} updated successfully.")
+            return True
+        FormWindow(self, "Update Student", fields, submit)
 
-        std = self.admin.school.students[self.admin.school.students['student_id'] == student_id].iloc[0]
-
-        name = simpledialog.askstring("Input", "Enter new name (leave blank to keep current):", initialvalue=std['name'])
-        age = simpledialog.askstring("Input", "Enter age (leave blank to keep current):", initialvalue=std['age'])
-        class_id = simpledialog.askstring("Input", "Enter new class (leave blank to keep current):", initialvalue=std['class'])
-        mark = simpledialog.askstring("Input", "Enter student mark (leave blank to keep current):", initialvalue=std['marks'])
-
-        self.admin.update_student(student_id, name, age, class_id, mark)
-        messagebox.showinfo("Success", f"Student ID {student_id} details updated successfully.")
-
-    # change for schedule
     def assign_teacher(self):
-        class_name = simpledialog.askstring("Input", "Enter class name:")
-        if not class_name:
-            return
-        teacher_id = simpledialog.askinteger("Input", "Enter teacher ID:")
-        if teacher_id:
-            self.admin.assign_teacher_to_class(class_name, teacher_id)
-            messagebox.showinfo("Success", "Teacher assigned to class")
+        fields = [
+            ("Class Name", ""),
+            ("Teacher ID", "")
+        ]
+        def submit(values):
+            try:
+                teacher_id = int(values["Teacher ID"])
+            except ValueError:
+                messagebox.showerror("Error", "Invalid Teacher ID.")
+                return False
+            self.admin.assign_teacher_to_class(values["Class Name"], teacher_id)
+            messagebox.showinfo("Success", "Teacher assigned to class.")
+            return True
+        FormWindow(self, "Assign Teacher", fields, submit)
 
+# ------------------ Teacher Dashboard ------------------
 class TeacherDashboard(tk.Frame):
     def __init__(self, parent, teacher):
         super().__init__(parent)
         self.teacher = teacher
+        self.configure(width=1000, height=700)
+        self.pack_propagate(0)
+        
+        self.canvas = Canvas(self, width=1000, height=700, bd=0, highlightthickness=0, relief="ridge", bg="#8B0000")
+        self.canvas.pack(fill="both", expand=True)
+        self.bg_image = PhotoImage(file=relative_to_assets("image_1.png"))
+        self.canvas.create_image(500, 350, image=self.bg_image)
+        
+        content_frame = tk.Frame(self.canvas, bg="#8B0000")
+        self.canvas.create_window(500, 350, window=content_frame, anchor="center")
+        
+        tk.Label(content_frame, text="Teacher Dashboard", font=("Arial", 24), bg="#8B0000", fg="#FFFFFF").pack(pady=10)
+        btn_font = ("Inter", 20)
+        tk.Button(content_frame, text="Mark Attendance", font=btn_font, command=self.mark_attendance).pack(pady=5)
+        tk.Button(content_frame, text="Update Profile", font=btn_font, command=self.update_teacher).pack(pady=5)
+        tk.Button(content_frame, text="Update Student Mark", font=btn_font, command=self.update_student_mark).pack(pady=5)
+        tk.Button(content_frame, text="Logout", font=btn_font, command=parent.show_login).pack(pady=5)
 
-        tk.Label(self, text="Teacher Dashboard", font=("Arial", 16)).pack(pady=10)
-
-        tk.Button(self, text="Mark Attendance", command=self.mark_attendance).pack(pady=5)
-        tk.Button(self, text="Update Profile", command=self.update_teacher).pack(pady=5)
-        tk.Button(self, text="Logout", command=parent.show_login).pack(pady=5)
-
-    # havent implement
     def mark_attendance(self):
-        class_name = simpledialog.askstring("Input", "Enter class name:")
-        if not class_name:
-            return
-        date = simpledialog.askstring("Input", "Enter date (e.g., YYYY-MM-DD):")
-        if not date:
-            return
-        student_id = simpledialog.askinteger("Input", "Enter student ID:")
-        if not student_id:
-            return
-        status = simpledialog.askstring("Input", "Enter status (present/absent):")
-        if status in ['present', 'absent']:
-            self.teacher.mark_attendance(class_name, date, student_id, status)
-            messagebox.showinfo("Success", "Attendance marked")
-        else:
-            messagebox.showerror("Error", "Status must be 'present' or 'absent'")
-    
+        fields = [
+            ("Class Name", ""),
+            ("Date (YYYY-MM-DD)", ""),
+            ("Student ID", ""),
+            ("Status (present/absent)", "")
+        ]
+        def submit(values):
+            try:
+                std_id = int(values["Student ID"])
+            except ValueError:
+                messagebox.showerror("Error", "Invalid Student ID.")
+                return False
+            if values["Status"].lower() not in ['present', 'absent']:
+                messagebox.showerror("Error", "Status must be 'present' or 'absent'.")
+                return False
+            self.teacher.mark_attendance(values["Class Name"], values["Date (YYYY-MM-DD)"], std_id, values["Status"])
+            messagebox.showinfo("Success", "Attendance marked.")
+            return True
+        FormWindow(self, "Mark Attendance", fields, submit)
+
     def update_teacher(self):
-        emp = self.teacher.school.employees[self.teacher.school.employees['employee_id'] == self.teacher.employee_id].iloc[0]
-
-        name = simpledialog.askstring("Input", "Enter new name (leave blank to keep current):", initialvalue=emp['name'])
-        contact = simpledialog.askstring("Input", "Enter new contact (leave blank to keep current):", initialvalue=emp['contact'])
-        username = simpledialog.askstring("Input", "Enter new username (leave blank to keep current):", initialvalue=emp['username'])
-        password = simpledialog.askstring("Input", "Enter new password (leave blank to keep current):", show='*')
-
-        success = self.teacher.update_teacher(name, contact, username, password)
-        if success:
-            messagebox.showinfo("Success", f"Your profile has been updated successfully.")
-        else:
-            messagebox.showerror("Error", "Failed to update profile.")
+        fields = [
+            ("Name", ""),
+            ("Contact", ""),
+            ("Username", ""),
+            ("Password", "")
+        ]
+        def submit(values):
+            success = self.teacher.update_teacher(values["Name"], values["Contact"],
+                                                  values["Username"], values["Password"])
+            if success:
+                messagebox.showinfo("Success", "Profile updated successfully.")
+            else:
+                messagebox.showerror("Error", "Failed to update profile.")
+            return success
+        FormWindow(self, "Update Profile", fields, submit)
 
     def update_student_mark(self):
-        student_id = simpledialog.askinteger("Input", "Enter student ID to update:")
-        if not student_id:
-            return
-    
-        if student_id not in self.admin.school.students['student_id'].values:
-            messagebox.showerror("Error", "Student ID not found.")
-            return
+        fields = [
+            ("Student ID", ""),
+            ("Mark", "")
+        ]
+        def submit(values):
+            try:
+                std_id = int(values["Student ID"])
+            except ValueError:
+                messagebox.showerror("Error", "Invalid Student ID.")
+                return False
+            self.teacher.school.update_student(std_id, values["Mark"])
+            messagebox.showinfo("Success", f"Student ID {std_id} mark updated successfully.")
+            return True
+        FormWindow(self, "Update Student Mark", fields, submit)
 
-        std = self.admin.school.students[self.admin.school.students['student_id'] == student_id].iloc[0]
+# ------------------ Main Application Controller ------------------
+class Application(tk.Tk):
+    def __init__(self):
+        super().__init__()
+        self.title("Universdity management system")
+        # Set main window size to 1000x700 and center it
+        width, height = 1000, 700
+        x = (self.winfo_screenwidth() - width) // 2
+        y = (self.winfo_screenheight() - height) // 2
+        self.geometry(f"{width}x{height}+{x}+{y}")
+        self.resizable(False, False)
 
-        mark = simpledialog.askstring("Input", "Enter student mark (leave blank to keep current):", initialvalue=std['marks'])
+        # Container to hold pages
+        self.container = tk.Frame(self)
+        self.container.pack(fill="both", expand=True)
 
-        self.admin.update_student(student_id, mark)
-        messagebox.showinfo("Success", f"Student ID {student_id} details updated successfully.")
+        self.current_frame = None
+        self.show_login()
+
+    def show_frame(self, frame_class, *args):
+        if self.current_frame is not None:
+            self.current_frame.destroy()
+        self.current_frame = frame_class(self.container, *args)
+        self.current_frame.pack(fill="both", expand=True)
+
+    def show_login(self):
+        self.show_frame(LoginFrame, self.login_callback)
+
+    def show_admin_dashboard(self, admin):
+        self.show_frame(AdminDashboard, admin)
+
+    def show_teacher_dashboard(self, teacher):
+        self.show_frame(TeacherDashboard, teacher)
+
+    def login_callback(self, username, password):
+        # Dummy authentication logic. Replace with real authentication.
+        if username == "admin" and password == "admin":
+            admin = Admin()  # Create an Admin instance
+            self.show_admin_dashboard(admin)
+        elif username == "teacher" and password == "teacher":
+            teacher = Teacher()  # Create a Teacher instance
+            self.show_teacher_dashboard(teacher)
+        else:
+            messagebox.showerror("Login Failed", "Invalid username or password.")
+
+if __name__ == "__main__":
+    app = Application()
+    app.mainloop()
