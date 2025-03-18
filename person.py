@@ -24,9 +24,8 @@ class Admin:
     def update_student(self, student_id, name=None, age=None, class_id=None, mark=None):
         return self.school.update_student(student_id, name, age, class_id, mark)
 
-    # change for schedule
-    def assign_teacher_to_class(self, class_name, teacher_id):
-        self.school.assign_teacher_to_class(class_name, teacher_id)
+    def assign_teacher_to_class(self, class_id, teacher_id):
+        self.school.assign_teacher_to_class( class_id, teacher_id)
 
 class Teacher:
     def __init__(self, school, username):
@@ -41,7 +40,7 @@ class Teacher:
         self.school.mark_attendance(class_name, date, student_id, status, self.employee_id)
 
     def update_student_mark(self, student_id, mark=None):
-        return self.school.update_student(student_id, mark)
+        return self.school.update_student(student_id=student_id, name=None, age=None, class_id=None, mark=mark)
     
     def update_teacher(self, name=None, contact=None, username=None, password=None):
         return self.school.update_teacher(self.employee_id, name, contact, username, password)

@@ -9,7 +9,7 @@ class School:
             ('csv/employees.csv', ['employee_id', 'name', 'contact', 'position', 'username', 'password', 'role']),
             ('csv/students.csv', ['student_id', 'name', 'age', 'class', 'marks']),
             ('csv/attendance.csv', ['date', 'class', 'student_id', 'status']),
-            ('csv/schedules.csv', ['class', 'teacher_id'])
+            ('csv/schedules.csv', ['classID', 'TeacherID', 'ClassName', 'Time', 'Day', 'Duration', 'MaxStudents', 'Subject'])
         ]
         # Ensure all CSV files exist
         for filename, headers in self.csv_files:
@@ -18,7 +18,7 @@ class School:
         self.employees = pd.DataFrame(columns=['employee_id', 'name', 'contact', 'position', 'username', 'password', 'role'])
         self.students = pd.DataFrame(columns=['student_id', 'name', 'age', 'class', 'marks']) 
         self.attendance = pd.DataFrame(columns=['date', 'class', 'student_id', 'status'])
-        self.schedules = pd.DataFrame(columns=['class', 'teacher_id'])
+        self.schedules = pd.DataFrame(columns=['classID', 'TeacherID', 'ClassName', 'Time', 'Day', 'Duration', 'MaxStudents', 'Subject'])
         self.load_data()
 
     def ensure_csv_exists(self, filename, headers=None):
@@ -131,12 +131,13 @@ class School:
         self.save_data()
     
     # change for schedule
-    def assign_teacher_to_class(self, class_name, teacher_id):
-        if teacher_id in self.employees['employee_id'].values:
-            schedule = {'class': class_name, 'teacher_id': teacher_id}
-            self.schedules = pd.concat([self.schedules, pd.DataFrame([schedule])], ignore_index=True)
-            self.save_data()
-
+    def assign_teacher_to_class(self, class_id, teacher_id,):
+        if teacher_id not in self.employees['employee_id'].values:
+            return False
+        schedule_details = {'classID': class_id, 'TeacherID': teacher_id,}        
+        self.schedules = pd.concat([self.schedules, pd.DataFrame([schedule_details])], ignore_index=True)
+        self.save_data()
+    
     # havent implement
     def mark_attendance(self, class_name, date, student_id, status, teacher_id):
         if class_name in self.schedules[self.schedules['teacher_id'] == teacher_id]['class'].values:
@@ -144,11 +145,17 @@ class School:
             self.attendance = pd.concat([self.attendance, pd.DataFrame([attendance_record])], ignore_index=True)
             self.save_data()
     
-    def update_student_mark(self, student_id, mark=None):
+    def update_student_mark(self, student_id, name=None, age=None, class_id=None, mark=None):
         if student_id not in self.students['student_id'].values:
             return False
         index = self.students[self.students['student_id'] == student_id].index[0]
 
-        if mark:
-            self.students.at[index, 'marks'] = mark
+        if name:
+            self.students.at[index, 'name'] = name
+        if age:
+            self.students.at[index, 'age'] = age
+        if class_id:
+            self.students.at[index, 'class_id'] = class_id
+        if mark is not None:  # Use 'is not None' to allow for mark=0
+            self.students.at[index, 'mark'] = mark
         self.save_data()

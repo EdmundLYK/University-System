@@ -382,7 +382,7 @@ class TeacherDashboard(tk.Frame):
             except ValueError:
                 messagebox.showerror("Error", "Invalid Student ID.")
                 return False
-            self.teacher.school.update_student(std_id, values["Mark"])
+            self.teacher.update_student_mark(std_id, values["Mark"])
             messagebox.showinfo("Success", f"Student ID {std_id} mark updated successfully.")
             return True
         FormWindow(self, "Update Student Mark", fields, submit)
