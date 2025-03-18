@@ -14,11 +14,13 @@ def relative_to_assets(path: str) -> Path:
 # ------------------ FormWindow Helper Class ------------------
 class FormWindow(tk.Toplevel):
     """
-    A Toplevel window (1000x500) with a dark red (#8B0000) background and the same background image as the login page.
-    A vertical form is generated based on the provided fields (list of tuples: (Field Label, default value)).
+    A Toplevel window (1000x500) with a background made of two layered images:
+    - The bottom layer: carbon.png
+    - The top layer: image_1.png
+    A vertical form is generated based on the provided fields.
     When the user presses "Submit" or Enter, the form's values are passed to submit_callback.
     If submit_callback returns True, the window closes; otherwise it remains open.
-    This window is modal (transient with grab_set) and always appears centered on the screen.
+    This window is modal and centered on the screen.
     """
     def __init__(self, parent, title, fields, submit_callback):
         super().__init__(parent)
@@ -29,21 +31,26 @@ class FormWindow(tk.Toplevel):
         y = (self.winfo_screenheight() - height) // 2
         self.geometry(f"{width}x{height}+{x}+{y}")
         self.resizable(False, False)
-        self.configure(bg="#8B0000")
+        self.configure(bg="#330000")
         
         # Make the window modal and transient so it stays on top of the dashboard
         self.transient(parent)
         self.grab_set()
         
         # Create a canvas covering the window
-        self.canvas = Canvas(self, bg="#8B0000", height=500, width=1000, bd=0, 
+        self.canvas = Canvas(self, bg="#330000", height=500, width=1000, bd=0, 
                              highlightthickness=0, relief="ridge")
         self.canvas.place(x=0, y=0)
         
-        # Place the background photo (centered at (500,250))
-        self.bg_image = PhotoImage(file=relative_to_assets("image_1.png"))
-        self.canvas.bg_image = self.bg_image  # Keep reference
-        self.canvas.create_image(500, 250, image=self.bg_image)
+        # Bottom background image: carbon.png
+        self.carbon_bg = PhotoImage(file=relative_to_assets("carbon.png"))
+        self.canvas.carbon_bg = self.carbon_bg  # Keep a reference
+        self.canvas.create_image(500, 250, image=self.carbon_bg)
+        
+        # Top overlapping background image: image_1.png
+        self.top_bg = PhotoImage(file=relative_to_assets("image_1.png"))
+        self.canvas.top_bg = self.top_bg
+        self.canvas.create_image(500, 250, image=self.top_bg)
         
         # Create form fields (labels and entries)
         self.entries = {}
@@ -51,7 +58,7 @@ class FormWindow(tk.Toplevel):
         y_gap = 60
         for i, (field_label, default_val) in enumerate(fields):
             y_pos = y_start + i * y_gap
-            lbl = tk.Label(self, text=field_label, font=("Inter", 20), bg="#8B0000", fg="#FFFFFF")
+            lbl = tk.Label(self, text=field_label, font=("Inter", 20), bg="#330000", fg="#FFFFFF")
             self.canvas.create_window(200, y_pos, window=lbl, anchor="w")
             ent = tk.Entry(self, font=("Inter", 20), fg="#000716", bd=2)
             if default_val is not None:
@@ -81,19 +88,24 @@ class FormWindow(tk.Toplevel):
 # ------------------ Login Page (Canvas-based) ------------------
 class LoginFrame(tk.Frame):
     def __init__(self, parent, login_callback):
-        super().__init__(parent, bg="#8B0000")  # Dark red background behind the photo
+        super().__init__(parent, bg="#330000")  # Dark red background
         self.login_callback = login_callback
         self.configure(width=1000, height=700)
         self.pack_propagate(0)
 
         # Create canvas for the login design
-        self.canvas = Canvas(self, bg="#8B0000", height=700, width=1000, bd=0, 
+        self.canvas = Canvas(self, bg="#330000", height=700, width=1000, bd=0, 
                              highlightthickness=0, relief="ridge")
         self.canvas.place(x=0, y=0)
 
-        # Background image (centered at (500,350))
-        self.bg_image = PhotoImage(file=relative_to_assets("image_1.png"))
-        self.canvas.create_image(500, 350, image=self.bg_image)
+        # Bottom background: carbon.png
+        self.carbon_bg = PhotoImage(file=relative_to_assets("carbon.png"))
+        self.canvas.carbon_bg = self.carbon_bg
+        self.canvas.create_image(500, 350, image=self.carbon_bg)
+        # Top overlapping background: image_1.png
+        self.top_bg = PhotoImage(file=relative_to_assets("image_1.png"))
+        self.canvas.top_bg = self.top_bg
+        self.canvas.create_image(500, 350, image=self.top_bg)
 
         # Title text
         self.canvas.create_text(
@@ -110,7 +122,7 @@ class LoginFrame(tk.Frame):
         self.entry_bg_1 = PhotoImage(file=relative_to_assets("entry_1.png"))
         self.canvas.create_image(498.5, 184, image=self.entry_bg_1)
         self.username_entry = Entry(
-            self, bd=0, bg="#D9D9D9", fg="#000716", 
+            self, bd=0, bg="#D9D9D9", fg="#000716",
             highlightthickness=0, font=("Inter", 20)
         )
         self.username_entry.place(x=384, y=150, width=229, height=66)
@@ -130,7 +142,7 @@ class LoginFrame(tk.Frame):
         self.password_entry.place(x=384, y=264, width=229, height=66)
         self.password_entry.bind("<Return>", lambda event: self.login())
 
-        # Login button with hover effect
+        # Login button with hover feature
         self.button_image_1 = PhotoImage(file=relative_to_assets("button_1.png"))
         self.login_button = Button(
             self, image=self.button_image_1, borderwidth=0, highlightthickness=0,
@@ -160,17 +172,23 @@ class AdminDashboard(tk.Frame):
         self.configure(width=1000, height=700)
         self.pack_propagate(0)
         
-        # Create a canvas for the dashboard background with dark red as the canvas bg
-        self.canvas = Canvas(self, width=1000, height=700, bd=0, highlightthickness=0, relief="ridge", bg="#8B0000")
+        # Create a canvas for the dashboard background with dark red as bg
+        self.canvas = Canvas(self, width=1000, height=700, bd=0, highlightthickness=0, relief="ridge", bg="#330000")
         self.canvas.pack(fill="both", expand=True)
-        self.bg_image = PhotoImage(file=relative_to_assets("image_1.png"))
-        self.canvas.create_image(500, 350, image=self.bg_image)
+        # Bottom layer: carbon.png
+        self.carbon_bg = PhotoImage(file=relative_to_assets("carbon.png"))
+        self.canvas.carbon_bg = self.carbon_bg
+        self.canvas.create_image(500, 350, image=self.carbon_bg)
+        # Top layer: image_1.png
+        self.top_bg = PhotoImage(file=relative_to_assets("image_1.png"))
+        self.canvas.top_bg = self.top_bg
+        self.canvas.create_image(500, 350, image=self.top_bg)
         
         # Create a frame on top to hold dashboard widgets with dark red background
-        content_frame = tk.Frame(self.canvas, bg="#8B0000")
+        content_frame = tk.Frame(self.canvas, bg="#330000")
         self.canvas.create_window(500, 350, window=content_frame, anchor="center")
         
-        tk.Label(content_frame, text="Admin Dashboard", font=("Arial", 24), bg="#8B0000", fg="#FFFFFF").pack(pady=10)
+        tk.Label(content_frame, text="Admin Dashboard", font=("Arial", 24), bg="#330000", fg="#FFFFFF").pack(pady=10)
         btn_font = ("Inter", 20)
         tk.Button(content_frame, text="Add Employee", font=btn_font, command=self.add_employee).pack(pady=5)
         tk.Button(content_frame, text="Update Employee", font=btn_font, command=self.update_employee).pack(pady=5)
@@ -318,22 +336,27 @@ class TeacherDashboard(tk.Frame):
         self.configure(width=1000, height=700)
         self.pack_propagate(0)
         
-        self.canvas = Canvas(self, width=1000, height=700, bd=0, highlightthickness=0, relief="ridge", bg="#8B0000")
+        self.canvas = Canvas(self, width=1000, height=700, bd=0, highlightthickness=0, relief="ridge", bg="#330000")
         self.canvas.pack(fill="both", expand=True)
-        self.bg_image = PhotoImage(file=relative_to_assets("image_1.png"))
-        self.canvas.create_image(500, 350, image=self.bg_image)
+        # Bottom background: carbon.png
+        self.carbon_bg = PhotoImage(file=relative_to_assets("carbon.png"))
+        self.canvas.carbon_bg = self.carbon_bg
+        self.canvas.create_image(500, 350, image=self.carbon_bg)
+        # Top overlapping background: image_1.png
+        self.top_bg = PhotoImage(file=relative_to_assets("image_1.png"))
+        self.canvas.top_bg = self.top_bg
+        self.canvas.create_image(500, 350, image=self.top_bg)
         
-        header_text = f"Teacher {self.teacher.username}'s Dashboard"
-        content_frame = tk.Frame(self.canvas, bg="#8B0000")
+        header_text = f"Teacher ({self.teacher.username})'s Dashboard"
+        content_frame = tk.Frame(self.canvas, bg="#330000")
         self.canvas.create_window(500, 350, window=content_frame, anchor="center")
         
-        tk.Label(content_frame, text=header_text, font=("Arial", 24), bg="#8B0000", fg="#FFFFFF").pack(pady=10)
+        tk.Label(content_frame, text=header_text, font=("Arial", 24), bg="#330000", fg="#FFFFFF").pack(pady=10)
         btn_font = ("Inter", 20)
         tk.Button(content_frame, text="Mark Attendance", font=btn_font, command=self.mark_attendance).pack(pady=5)
         tk.Button(content_frame, text="Update Profile", font=btn_font, command=self.update_teacher).pack(pady=5)
         tk.Button(content_frame, text="Update Student Mark", font=btn_font, command=self.update_student_mark).pack(pady=5)
         tk.Button(content_frame, text="Logout", font=btn_font, command=parent.show_login).pack(pady=5)
-
 
     def mark_attendance(self):
         fields = [
@@ -364,13 +387,15 @@ class TeacherDashboard(tk.Frame):
             ("Password", "")
         ]
         def submit(values):
-            success = self.teacher.update_teacher(values["Name"], values["Contact"],
-                                                  values["Username"], values["Password"])
-            if success:
+            # If update_teacher returns None or True, treat it as success.
+            result = self.teacher.update_teacher(values["Name"], values["Contact"],
+                                                 values["Username"], values["Password"])
+            if result is None or result:
                 messagebox.showinfo("Success", "Profile updated successfully.")
+                return True
             else:
                 messagebox.showerror("Error", "Failed to update profile.")
-            return success
+                return False
         FormWindow(self, "Update Profile", fields, submit)
 
     def update_student_mark(self):
@@ -422,17 +447,6 @@ class Application(tk.Tk):
 
     def show_teacher_dashboard(self, teacher):
         self.show_frame(TeacherDashboard, teacher)
-
-    def login_callback(self, username, password):
-        # Dummy authentication logic. Replace with real authentication.
-        if username == "admin" and password == "admin":
-            admin = Admin()  # Create an Admin instance
-            self.show_admin_dashboard(admin)
-        elif username == "teacher" and password == "teacher":
-            teacher = Teacher()  # Create a Teacher instance
-            self.show_teacher_dashboard(teacher)
-        else:
-            messagebox.showerror("Login Failed", "Invalid username or password.")
 
 if __name__ == "__main__":
     app = Application()
