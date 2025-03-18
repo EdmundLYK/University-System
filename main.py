@@ -8,7 +8,7 @@ class SchoolApp(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("School Management System")
-        self.geometry("400x300")
+        self.geometry("500x400")
         self.school = School()
         self.current_frame = None
         self.show_login()

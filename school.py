@@ -4,12 +4,12 @@ import csv
 
 class School:
     def __init__(self):
-        # Define CSV files and their headers
+        # Define CSV files and their path
         self.csv_files = [
-            ('employees.csv', ['employee_id', 'name', 'contact', 'position', 'username', 'password', 'role']),
-            ('students.csv', ['student_id', 'name', 'age', 'class', 'marks']),
-            ('attendance.csv', ['date', 'class', 'student_id', 'status']),
-            ('schedules.csv', ['class', 'teacher_id'])
+            ('csv/employees.csv', ['employee_id', 'name', 'contact', 'position', 'username', 'password', 'role']),
+            ('csv/students.csv', ['student_id', 'name', 'age', 'class', 'marks']),
+            ('csv/attendance.csv', ['date', 'class', 'student_id', 'status']),
+            ('csv/schedules.csv', ['class', 'teacher_id'])
         ]
         # Ensure all CSV files exist
         for filename, headers in self.csv_files:
@@ -22,7 +22,9 @@ class School:
         self.load_data()
 
     def ensure_csv_exists(self, filename, headers=None):
-        """Ensure a CSV file exists; create it with headers if it doesn't."""
+        """Ensure a CSV file exists in the csv subfolder; create it with headers if it doesn't."""
+        # Ensure the 'csv' subfolder exists
+        os.makedirs('csv', exist_ok=True)
         if not os.path.exists(filename):
             with open(filename, 'w', newline='') as csvfile:
                 if headers:
@@ -32,20 +34,20 @@ class School:
     def load_data(self):
         """Load data from CSV files into DataFrames."""
         for file, attr in [
-            ('employees.csv', 'employees'),
-            ('students.csv', 'students'),
-            ('attendance.csv', 'attendance'),
-            ('schedules.csv', 'schedules')
+            ('csv/employees.csv', 'employees'),
+            ('csv/students.csv', 'students'),
+            ('csv/attendance.csv', 'attendance'),
+            ('csv/schedules.csv', 'schedules')
         ]:
             if os.path.exists(file):
                 setattr(self, attr, pd.read_csv(file))
 
     def save_data(self):
         """Save all DataFrames to CSV files."""
-        self.employees.to_csv('employees.csv', index=False)
-        self.students.to_csv('students.csv', index=False)
-        self.attendance.to_csv('attendance.csv', index=False)
-        self.schedules.to_csv('schedules.csv', index=False)
+        self.employees.to_csv('csv/employees.csv', index=False)
+        self.students.to_csv('csv/students.csv', index=False)
+        self.attendance.to_csv('csv/attendance.csv', index=False)
+        self.schedules.to_csv('csv/schedules.csv', index=False)
 
     def add_employee(self, name, contact, position, username=None, password=None):
         new_id = 1 if self.employees.empty else self.employees['employee_id'].max() + 1
