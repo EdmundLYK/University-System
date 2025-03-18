@@ -9,7 +9,8 @@ class School:
             ('csv/employees.csv', ['employee_id', 'name', 'contact', 'position', 'username', 'password', 'role']),
             ('csv/students.csv', ['student_id', 'name', 'age', 'class', 'marks']),
             ('csv/attendance.csv', ['date', 'class', 'student_id', 'status']),
-            ('csv/schedules.csv', ['classID', 'TeacherID', 'ClassName', 'Time', 'Day', 'Duration', 'MaxStudents', 'Subject'])
+            ('csv/schedules.csv', ['classID', 'TeacherID', 'ClassName', 'Time', 'Day', 'Duration', 'MaxStudents', 'Subject']),
+            ('csv/lesson_plan.csv', ['LessonID','TeacherID','ClassID','Subject','LessonDetails','Date','Materials','LearningObjectives','Assessment'])
         ]
         # Ensure all CSV files exist
         for filename, headers in self.csv_files:
@@ -179,3 +180,42 @@ class School:
             self.students.at[index, 'Subject'] = subject
         self.save_data()
 
+    def add_lesson_plan(self, teacher_id, class_id, subject, lesson_details, date, materials, learning_objectives, assessment):
+        new_id = 1 if self.lesson_plan.empty else self.lesson_plan['LessonID'].max() + 1
+        lesson_details = {
+            'LessonID': new_id, 
+            'TeacherID': teacher_id, 
+            'ClassID': class_id, 
+            'Subject': subject,
+            'LessonDetails': lesson_details, 
+            'Date': date, 
+            'Materials': materials, 
+            'LearningObjectives': learning_objectives, 
+            'Assessment': assessment, 
+            }
+        self.lesson_plan = pd.concat([self.lesson_plan, pd.DataFrame([lesson_details])], ignore_index=True)
+        self.save_data()
+        return new_id
+
+    def update_lesson_plan(self, lesson_id, teacher_id, class_id, subject, lesson_details, date, materials, learning_objectives, assessment):
+        if teacher_id not in self.employees['employee_id'].values:
+            return False
+        index = self.employees[self.employees['employee_id'] == teacher_id].index[0]
+
+        if lesson_id:
+            self.lesson_plan.at[index, 'LessonID'] = lesson_id
+        if class_id:
+            self.lesson_plan.at[index, 'ClassID'] = class_id
+        if subject:
+            self.lesson_plan.at[index, 'Subject'] = subject
+        if lesson_details:
+            self.lesson_plan.at[index, 'LessonDetails'] = lesson_details
+        if date:
+            self.lesson_plan.at[index, 'Date'] = date
+        if materials:
+            self.lesson_plan.at[index, 'Materials'] = materials
+        if learning_objectives:
+            self.lesson_plan.at[index, 'LearningObjectives'] = learning_objectives
+        if assessment:
+            self.lesson_plan.at[index, 'Assessment'] = assessment
+        self.save_data()

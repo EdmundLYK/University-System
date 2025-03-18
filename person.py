@@ -47,3 +47,9 @@ class Teacher:
     
     def update_class_details(self, class_id, teacher_id, class_name, time, day, duration, max_students, subject):
         return self.school.update_class_details( class_id, teacher_id, class_name, time, day, duration, max_students, subject)
+
+    def add_lesson_plan(self, teacher_id, class_id, subject, lesson_details, date, materials, learning_objectives, assessment):
+        return self.school.add_lesson_plan( teacher_id, class_id, subject, lesson_details, date, materials, learning_objectives, assessment)
+    
+    def update_lesson_plans(self, lesson_id, teacher_id, class_id, subject, lesson_details, date, materials, learning_objectives, assessment):
+        return self.school.add_lesson_plan(lesson_id, teacher_id, class_id, subject, lesson_details, date, materials, learning_objectives, assessment)
