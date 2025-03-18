@@ -24,7 +24,7 @@ class Admin:
     def update_student(self, student_id, name=None, age=None, class_id=None, mark=None):
         return self.school.update_student(student_id, name, age, class_id, mark)
 
-    # change class_name in other places as well
+    # change for schedule
     def assign_teacher_to_class(self, class_name, teacher_id):
         self.school.assign_teacher_to_class(class_name, teacher_id)
 
@@ -36,15 +36,12 @@ class Teacher:
         if not emp.empty:
             self.employee_id = emp['employee_id'].values[0]
 
+    # havent implement
     def mark_attendance(self, class_name, date, student_id, status):
         self.school.mark_attendance(class_name, date, student_id, status, self.employee_id)
 
-# change accordingly
-    def add_student_mark(self, name=None, age=None, class_id=None, mark=None):
-        self.school.update_student(name, age, class_id, mark)
-
-    def update_student_mark(self, name=None, age=None, class_id=None, mark=None):
-        self.school.update_student(name, age, class_id, mark)
+    def update_student_mark(self, student_id, mark=None):
+        return self.school.update_student(student_id, mark)
     
     def update_teacher(self, name=None, contact=None, username=None, password=None):
         return self.school.update_teacher(self.employee_id, name, contact, username, password)

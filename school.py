@@ -127,14 +127,25 @@ class School:
             self.employees.at[index, 'password'] = password
         self.save_data()
     
+    # change for schedule
     def assign_teacher_to_class(self, class_name, teacher_id):
         if teacher_id in self.employees['employee_id'].values:
             schedule = {'class': class_name, 'teacher_id': teacher_id}
             self.schedules = pd.concat([self.schedules, pd.DataFrame([schedule])], ignore_index=True)
             self.save_data()
 
+    # havent implement
     def mark_attendance(self, class_name, date, student_id, status, teacher_id):
         if class_name in self.schedules[self.schedules['teacher_id'] == teacher_id]['class'].values:
             attendance_record = {'date': date, 'class': class_name, 'student_id': student_id, 'status': status}
             self.attendance = pd.concat([self.attendance, pd.DataFrame([attendance_record])], ignore_index=True)
             self.save_data()
+    
+    def update_student_mark(self, student_id, mark=None):
+        if student_id not in self.students['student_id'].values:
+            return False
+        index = self.students[self.students['student_id'] == student_id].index[0]
+
+        if mark:
+            self.students.at[index, 'marks'] = mark
+        self.save_data()

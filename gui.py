@@ -126,6 +126,7 @@ class AdminDashboard(tk.Frame):
         self.admin.update_student(student_id, name, age, class_id, mark)
         messagebox.showinfo("Success", f"Student ID {student_id} details updated successfully.")
 
+    # change for schedule
     def assign_teacher(self):
         class_name = simpledialog.askstring("Input", "Enter class name:")
         if not class_name:
@@ -146,6 +147,7 @@ class TeacherDashboard(tk.Frame):
         tk.Button(self, text="Update Profile", command=self.update_teacher).pack(pady=5)
         tk.Button(self, text="Logout", command=parent.show_login).pack(pady=5)
 
+    # havent implement
     def mark_attendance(self):
         class_name = simpledialog.askstring("Input", "Enter class name:")
         if not class_name:
@@ -176,3 +178,19 @@ class TeacherDashboard(tk.Frame):
             messagebox.showinfo("Success", f"Your profile has been updated successfully.")
         else:
             messagebox.showerror("Error", "Failed to update profile.")
+
+    def update_student_mark(self):
+        student_id = simpledialog.askinteger("Input", "Enter student ID to update:")
+        if not student_id:
+            return
+    
+        if student_id not in self.admin.school.students['student_id'].values:
+            messagebox.showerror("Error", "Student ID not found.")
+            return
+
+        std = self.admin.school.students[self.admin.school.students['student_id'] == student_id].iloc[0]
+
+        mark = simpledialog.askstring("Input", "Enter student mark (leave blank to keep current):", initialvalue=std['marks'])
+
+        self.admin.update_student(student_id, mark)
+        messagebox.showinfo("Success", f"Student ID {student_id} details updated successfully.")
