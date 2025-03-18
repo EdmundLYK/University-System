@@ -1,2 +1,2 @@
-date,class,student_id,status
-2000-12-12,1,1,present
+AttendanceID,ClassID,StudentID,Date,Status
+

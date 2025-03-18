@@ -8,7 +8,7 @@ class School:
         self.csv_files = [
             ('csv/employees.csv', ['employee_id', 'name', 'contact', 'position', 'username', 'password', 'role']),
             ('csv/students.csv', ['student_id', 'name', 'age', 'class', 'marks']),
-            ('csv/attendance.csv', ['date', 'class', 'student_id', 'status']),
+            ('csv/attendance.csv', ['AttendanceID', 'ClassID', 'StudentID', 'Date', 'Status']),
             ('csv/schedules.csv', ['classID', 'TeacherID', 'ClassName', 'Time', 'Day', 'Duration', 'MaxStudents', 'Subject']),
             ('csv/lesson_plan.csv', ['LessonID','TeacherID','ClassID','Subject','LessonDetails','Date','Materials','LearningObjectives','Assessment'])
         ]
@@ -131,7 +131,6 @@ class School:
             self.employees.at[index, 'password'] = password
         self.save_data()
     
-    # change for schedule
     def assign_teacher_to_class(self, class_id, teacher_id,):
         if teacher_id not in self.employees['employee_id'].values:
             return False
@@ -139,12 +138,26 @@ class School:
         self.schedules = pd.concat([self.schedules, pd.DataFrame([schedule_details])], ignore_index=True)
         self.save_data()
     
-    # havent implement
-    def mark_attendance(self, class_name, date, student_id, status, teacher_id):
-        if class_name in self.schedules[self.schedules['teacher_id'] == teacher_id]['class'].values:
-            attendance_record = {'date': date, 'class': class_name, 'student_id': student_id, 'status': status}
-            self.attendance = pd.concat([self.attendance, pd.DataFrame([attendance_record])], ignore_index=True)
-            self.save_data()
+    def mark_attendance(self, class_id, student_id, date, status):
+        new_id = 1 if self.attendance.empty else self.attendance['AttendanceID'].max() + 1
+        attendance_record = {'AttendanceID': new_id,'ClassID': class_id, 'StudentID': student_id, 'Date': date, 'status': status}
+        self.attendance = pd.concat([self.attendance, pd.DataFrame([attendance_record])], ignore_index=True)
+        self.save_data()
+    
+    def update_attendance(self, attendance_id, class_id, student_id, date, status):
+        if attendance_id not in self.attendance['AttendanceID'].values:
+            return False
+        index = self.attendance[self.attendance['AttendanceID'] == attendance_id].index[0]
+
+        if class_id:
+            self.students.at[index, 'ClassID'] = class_id
+        if student_id:
+            self.students.at[index, 'StudentID'] = student_id
+        if date:
+            self.students.at[index, 'Date'] = date
+        if status:
+            self.students.at[index, 'status'] = status
+        self.save_data()
     
     def update_student_mark(self, student_id, name=None, age=None, class_id=None, mark=None):
         if student_id not in self.students['student_id'].values:

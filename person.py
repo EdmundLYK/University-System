@@ -35,9 +35,11 @@ class Teacher:
         if not emp.empty:
             self.employee_id = emp['employee_id'].values[0]
 
-    # havent implement
-    def mark_attendance(self, class_name, date, student_id, status):
-        self.school.mark_attendance(class_name, date, student_id, status, self.employee_id)
+    def mark_attendance(self, class_id, student_id, date, status):
+        self.school.mark_attendance(class_id, student_id, date, status)
+
+    def update_attendance(self, attendance_id, class_id, student_id, date, status):
+        return self.school.update_student(self, attendance_id, class_id, student_id, date, status)
 
     def update_student_mark(self, student_id, mark=None):
         return self.school.update_student(student_id=student_id, name=None, age=None, class_id=None, mark=mark)
@@ -53,3 +55,9 @@ class Teacher:
     
     def update_lesson_plans(self, lesson_id, teacher_id, class_id, subject, lesson_details, date, materials, learning_objectives, assessment):
         return self.school.add_lesson_plan(lesson_id, teacher_id, class_id, subject, lesson_details, date, materials, learning_objectives, assessment)
+    
+    # implement delete function for all
+    # implement delete function for all
+    # implement delete function for all
+    # implement delete function for all
+    # implement delete function for all
