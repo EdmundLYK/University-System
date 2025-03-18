@@ -1,3 +1,5 @@
-student_id,name,class
-1,student,1
-2,edmund,3
+student_id,name,age,class,marks
+1,student,,1,
+2,edmund,,3,
+3,hi,22,2,100
+4,21,lol,4,

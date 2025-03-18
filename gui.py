@@ -33,6 +33,8 @@ class AdminDashboard(tk.Frame):
         tk.Button(self, text="Update Employee", command=self.update_employee).pack(pady=5)
         tk.Button(self, text="Remove Employee", command=self.remove_employee).pack(pady=5)
         tk.Button(self, text="Add Student", command=self.add_student).pack(pady=5)
+        tk.Button(self, text="Remove Student", command=self.remove_student).pack(pady=5)
+        tk.Button(self, text="Update Student", command=self.update_student).pack(pady=5)
         tk.Button(self, text="Assign Teacher to Class", command=self.assign_teacher).pack(pady=5)
         tk.Button(self, text="Logout", command=parent.show_login).pack(pady=5)
 
@@ -90,11 +92,39 @@ class AdminDashboard(tk.Frame):
         name = simpledialog.askstring("Input", "Enter student name:")
         if not name:
             return
-        class_name = simpledialog.askstring("Input", "Enter class:")
-        if not class_name:
+        age  = simpledialog.askinteger("Input", "Enter student age:")
+        if not age:
             return
-        self.admin.add_student(name, class_name)
+        class_id = simpledialog.askstring("Input", "Enter class:")
+        if not class_id:
+            return
+        self.admin.add_student(name, age, class_id)
         messagebox.showinfo("Success", "Student added")
+    
+    def remove_student(self):
+        student_id = simpledialog.askinteger("Input", "Enter student ID to remove:")
+        if student_id:
+            self.admin.remove_student(student_id)
+            messagebox.showinfo("Success", "Student removed")
+
+    def update_student(self):
+        student_id = simpledialog.askinteger("Input", "Enter student ID to update:")
+        if not student_id:
+            return
+    
+        if student_id not in self.admin.school.students['student_id'].values:
+            messagebox.showerror("Error", "Student ID not found.")
+            return
+
+        std = self.admin.school.students[self.admin.school.students['student_id'] == student_id].iloc[0]
+
+        name = simpledialog.askstring("Input", "Enter new name (leave blank to keep current):", initialvalue=std['name'])
+        age = simpledialog.askstring("Input", "Enter age (leave blank to keep current):", initialvalue=std['age'])
+        class_id = simpledialog.askstring("Input", "Enter new class (leave blank to keep current):", initialvalue=std['class'])
+        mark = simpledialog.askstring("Input", "Enter student mark (leave blank to keep current):", initialvalue=std['marks'])
+
+        self.admin.update_student(student_id, name, age, class_id, mark)
+        messagebox.showinfo("Success", f"Student ID {student_id} details updated successfully.")
 
     def assign_teacher(self):
         class_name = simpledialog.askstring("Input", "Enter class name:")

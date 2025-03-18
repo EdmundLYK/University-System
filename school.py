@@ -68,12 +68,6 @@ class School:
         self.schedules = self.schedules[self.schedules['teacher_id'] != employee_id]
         self.save_data()
 
-    def add_student(self, name, class_name):
-        new_id = 1 if self.students.empty else self.students['student_id'].max() + 1
-        student_details = {'student_id': new_id, 'name': name, 'class': class_name}
-        self.students = pd.concat([self.students, pd.DataFrame([student_details])], ignore_index=True)
-        self.save_data()
-
     def update_employee(self, employee_id, name=None, contact=None, position=None, username=None, password=None):
         if employee_id not in self.employees['employee_id'].values:
             return False
@@ -91,6 +85,31 @@ class School:
             self.employees.at[index, 'username'] = username
         if password:
             self.employees.at[index, 'password'] = password
+        self.save_data()
+
+    def add_student(self, age, name, class_id):
+        new_id = 1 if self.students.empty else self.students['student_id'].max() + 1
+        student_details = {'student_id': new_id, 'name': name, 'age': age, 'class': class_id}
+        self.students = pd.concat([self.students, pd.DataFrame([student_details])], ignore_index=True)
+        self.save_data()
+
+    def remove_student(self, student_id):
+        self.students = self.students[self.students['student_id'] != student_id]
+        self.save_data()
+    
+    def update_student(self, student_id, name=None, age=None, class_id=None, mark=None):
+        if student_id not in self.students['student_id'].values:
+            return False
+        index = self.students[self.students['student_id'] == student_id].index[0]
+
+        if name:
+            self.students.at[index, 'name'] = name
+        if age:
+            self.students.at[index, 'age'] = age
+        if class_id:
+            self.students.at[index, 'class'] = class_id
+        if mark:
+            self.students.at[index, 'marks'] = mark
         self.save_data()
 
     def assign_teacher_to_class(self, class_name, teacher_id):

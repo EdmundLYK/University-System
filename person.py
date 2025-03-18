@@ -15,9 +15,16 @@ class Admin:
     def update_employee(self, employee_id, name=None, contact=None, position=None, username=None, password=None):
         return self.school.update_employee(employee_id, name, contact, position, username, password)
 
-    def add_student(self, name, class_name):
-        self.school.add_student(name, class_name)
+    def add_student(self, name, age, class_id):
+        return self.school.add_student(name, age, class_id)
+    
+    def remove_student(self, name):
+        self.school.remove_student(name)
 
+    def update_student(self, student_id, name=None, age=None, class_id=None, mark=None):
+        return self.school.update_student(student_id, name, age, class_id, mark)
+
+    # change class_name in other places as well
     def assign_teacher_to_class(self, class_name, teacher_id):
         self.school.assign_teacher_to_class(class_name, teacher_id)
 
@@ -31,3 +38,10 @@ class Teacher:
 
     def mark_attendance(self, class_name, date, student_id, status):
         self.school.mark_attendance(class_name, date, student_id, status, self.employee_id)
+
+# change accordingly
+    def add_student_mark(self, name=None, age=None, class_id=None, mark=None):
+        self.school.update_student(name, age, class_id, mark)
+
+    def update_student_mark(self, name=None, age=None, class_id=None, mark=None):
+        self.school.update_student(name, age, class_id, mark)
