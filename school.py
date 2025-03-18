@@ -159,3 +159,23 @@ class School:
         if mark is not None:  # Use 'is not None' to allow for mark=0
             self.students.at[index, 'mark'] = mark
         self.save_data()
+
+    def update_class_details(self, class_id, teacher_id, class_name, time, day, duration, max_students, subject):
+        if teacher_id not in self.employees['employee_id'].values:
+            return False
+        index = self.employees[self.employees['employee_id'] == teacher_id].index[0]
+
+        if class_name:
+            self.schedules.at[index, 'ClassName'] = class_name
+        if time:
+            self.students.at[index, 'Time'] = time
+        if day:
+            self.students.at[index, 'Day'] = day
+        if duration:
+            self.students.at[index, 'Duration'] = duration
+        if max_students:
+            self.students.at[index, 'MaxStudents'] = max_students
+        if subject:
+            self.students.at[index, 'Subject'] = subject
+        self.save_data()
+

@@ -44,3 +44,6 @@ class Teacher:
     
     def update_teacher(self, name=None, contact=None, username=None, password=None):
         return self.school.update_teacher(self.employee_id, name, contact, username, password)
+    
+    def update_class_details(self, class_id, teacher_id, class_name, time, day, duration, max_students, subject):
+        return self.school.update_class_details( class_id, teacher_id, class_name, time, day, duration, max_students, subject)
