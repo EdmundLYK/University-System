@@ -323,15 +323,17 @@ class TeacherDashboard(tk.Frame):
         self.bg_image = PhotoImage(file=relative_to_assets("image_1.png"))
         self.canvas.create_image(500, 350, image=self.bg_image)
         
+        header_text = f"Teacher {self.teacher.username}'s Dashboard"
         content_frame = tk.Frame(self.canvas, bg="#8B0000")
         self.canvas.create_window(500, 350, window=content_frame, anchor="center")
         
-        tk.Label(content_frame, text="Teacher Dashboard", font=("Arial", 24), bg="#8B0000", fg="#FFFFFF").pack(pady=10)
+        tk.Label(content_frame, text=header_text, font=("Arial", 24), bg="#8B0000", fg="#FFFFFF").pack(pady=10)
         btn_font = ("Inter", 20)
         tk.Button(content_frame, text="Mark Attendance", font=btn_font, command=self.mark_attendance).pack(pady=5)
         tk.Button(content_frame, text="Update Profile", font=btn_font, command=self.update_teacher).pack(pady=5)
         tk.Button(content_frame, text="Update Student Mark", font=btn_font, command=self.update_student_mark).pack(pady=5)
         tk.Button(content_frame, text="Logout", font=btn_font, command=parent.show_login).pack(pady=5)
+
 
     def mark_attendance(self):
         fields = [
@@ -382,7 +384,7 @@ class TeacherDashboard(tk.Frame):
             except ValueError:
                 messagebox.showerror("Error", "Invalid Student ID.")
                 return False
-            self.teacher.update_student_mark(std_id, values["Mark"])
+            self.teacher.school.update_student(std_id, values["Mark"])
             messagebox.showinfo("Success", f"Student ID {std_id} mark updated successfully.")
             return True
         FormWindow(self, "Update Student Mark", fields, submit)
