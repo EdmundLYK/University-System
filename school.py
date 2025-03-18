@@ -7,7 +7,7 @@ class School:
         # Define CSV files and their headers
         self.csv_files = [
             ('employees.csv', ['employee_id', 'name', 'contact', 'position', 'username', 'password', 'role']),
-            ('students.csv', ['student_id', 'name', 'class']),
+            ('students.csv', ['student_id', 'name', 'age', 'class', 'marks']),
             ('attendance.csv', ['date', 'class', 'student_id', 'status']),
             ('schedules.csv', ['class', 'teacher_id'])
         ]
@@ -16,7 +16,7 @@ class School:
             self.ensure_csv_exists(filename, headers)
         # Initialize DataFrames
         self.employees = pd.DataFrame(columns=['employee_id', 'name', 'contact', 'position', 'username', 'password', 'role'])
-        self.students = pd.DataFrame(columns=['student_id', 'name', 'class'])
+        self.students = pd.DataFrame(columns=['student_id', 'name', 'age', 'class', 'marks']) 
         self.attendance = pd.DataFrame(columns=['date', 'class', 'student_id', 'status'])
         self.schedules = pd.DataFrame(columns=['class', 'teacher_id'])
         self.load_data()
@@ -112,6 +112,21 @@ class School:
             self.students.at[index, 'marks'] = mark
         self.save_data()
 
+    def update_teacher(self, employee_id, name=None, contact=None, username=None, password=None):
+        if employee_id not in self.employees['employee_id'].values:
+            return False
+        index = self.employees[self.employees['employee_id'] == employee_id].index[0]
+
+        if name:
+            self.employees.at[index, 'name'] = name
+        if contact:
+            self.employees.at[index, 'contact'] = contact
+        if username:
+            self.employees.at[index, 'username'] = username
+        if password:
+            self.employees.at[index, 'password'] = password
+        self.save_data()
+    
     def assign_teacher_to_class(self, class_name, teacher_id):
         if teacher_id in self.employees['employee_id'].values:
             schedule = {'class': class_name, 'teacher_id': teacher_id}

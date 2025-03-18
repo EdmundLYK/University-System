@@ -45,3 +45,6 @@ class Teacher:
 
     def update_student_mark(self, name=None, age=None, class_id=None, mark=None):
         self.school.update_student(name, age, class_id, mark)
+    
+    def update_teacher(self, name=None, contact=None, username=None, password=None):
+        return self.school.update_teacher(self.employee_id, name, contact, username, password)

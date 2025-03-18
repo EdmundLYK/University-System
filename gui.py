@@ -143,6 +143,7 @@ class TeacherDashboard(tk.Frame):
         tk.Label(self, text="Teacher Dashboard", font=("Arial", 16)).pack(pady=10)
 
         tk.Button(self, text="Mark Attendance", command=self.mark_attendance).pack(pady=5)
+        tk.Button(self, text="Update Profile", command=self.update_teacher).pack(pady=5)
         tk.Button(self, text="Logout", command=parent.show_login).pack(pady=5)
 
     def mark_attendance(self):
@@ -161,3 +162,17 @@ class TeacherDashboard(tk.Frame):
             messagebox.showinfo("Success", "Attendance marked")
         else:
             messagebox.showerror("Error", "Status must be 'present' or 'absent'")
+    
+    def update_teacher(self):
+        emp = self.teacher.school.employees[self.teacher.school.employees['employee_id'] == self.teacher.employee_id].iloc[0]
+
+        name = simpledialog.askstring("Input", "Enter new name (leave blank to keep current):", initialvalue=emp['name'])
+        contact = simpledialog.askstring("Input", "Enter new contact (leave blank to keep current):", initialvalue=emp['contact'])
+        username = simpledialog.askstring("Input", "Enter new username (leave blank to keep current):", initialvalue=emp['username'])
+        password = simpledialog.askstring("Input", "Enter new password (leave blank to keep current):", show='*')
+
+        success = self.teacher.update_teacher(name, contact, username, password)
+        if success:
+            messagebox.showinfo("Success", f"Your profile has been updated successfully.")
+        else:
+            messagebox.showerror("Error", "Failed to update profile.")
