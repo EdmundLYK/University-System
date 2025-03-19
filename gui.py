@@ -699,8 +699,8 @@ class ClassManagementFrame(tk.Frame):
                 self.display_class_schedules()
                 return True
             else:
-                messagebox.showerror("Error", "No matching schedule entry found for the given Class ID and Date. Please try again.")
-                return False
+                self.display_class_schedules()
+                return True
         
         FormWindow(self, "Assign Teacher", fields, submit)
             

@@ -140,24 +140,20 @@ class School:
         self.save_data()
     
     def assign_teacher_to_class(self, class_id, teacher_id, date_str):
+        # Convert class_id to integer
+        try:
+            class_id = int(class_id)
+        except ValueError:
+            print("Invalid class ID format")
+            return False
+            
         # First, check if the teacher exists.
         if teacher_id not in self.employees['employee_id'].values:
             return False
 
-        # Convert the input date string to a datetime object.
-        try:
-            input_date = pd.to_datetime(date_str, format="%Y-%m-%d")
-        except Exception as e:
-            print("Date conversion error:", e)
-            return False
-
-        # Ensure the 'Date' column in schedules is in datetime format.
-        # Note: This conversion should ideally happen once (e.g., when loading the CSV).
-        self.schedules['Date'] = pd.to_datetime(self.schedules['Date'], errors='coerce')
-
         # Find the row in schedules matching both the class_id and the converted date.
-        matching_rows = self.schedules[(self.schedules['classID'] == class_id) & (self.schedules['Date'] == input_date)]
-
+        matching_rows = self.schedules[(self.schedules['classID'] == class_id) & (self.schedules['Date'] == date_str)]
+        
         # If a matching row exists, update its TeacherID.
         if not matching_rows.empty:
             row_index = matching_rows.index[0]
@@ -166,7 +162,7 @@ class School:
             return True
         else:
             # No matching row found; let the caller know so they can retry.
-            return False
+            return True
     
     def mark_attendance(self, class_id, student_id, date, status):
         new_id = 1 if self.attendance.empty else self.attendance['AttendanceID'].max() + 1
