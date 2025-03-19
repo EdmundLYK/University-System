@@ -187,13 +187,13 @@ class School:
         if class_name:
             self.schedules.at[index, 'ClassName'] = class_name
         if date:
-            self.students.at[index, 'Date'] = date
+            self.schedules.at[index, 'Date'] = date
         if duration:
-            self.students.at[index, 'Duration'] = duration
+            self.schedules.at[index, 'Duration'] = duration
         if max_students:
-            self.students.at[index, 'MaxStudents'] = max_students
+            self.schedules.at[index, 'MaxStudents'] = max_students
         if subject:
-            self.students.at[index, 'Subject'] = subject
+            self.schedules.at[index, 'Subject'] = subject
         self.save_data()
 
     def add_lesson_plan(self, teacher_id, class_id, subject, lesson_details, date, learning_objectives, assessment):

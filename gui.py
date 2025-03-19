@@ -1190,7 +1190,7 @@ class ProfileManagementFrame(tk.Frame):
             schedules_df = pd.read_csv("csv/schedules.csv")
             
             # Filter for this teacher's ID
-            teacher_classes = schedules_df[schedules_df['teacher_id'] == self.teacher.employee_id]
+            teacher_classes = schedules_df[schedules_df['TeacherID'] == self.teacher.employee_id]
             
             if teacher_classes.empty:
                 message = "No classes currently assigned to you."
