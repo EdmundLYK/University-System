@@ -232,3 +232,36 @@ class School:
         if assessment:
             self.lesson_plan.at[index, 'Assessment'] = assessment
         self.save_data()
+
+    def attendance_report(self, class_id, date):
+        attendance_data = self.attendance[
+        (self.attendance['ClassID'] == class_id) & 
+        (self.attendance['Date'] == date)
+        ]
+    
+        if attendance_data.empty:
+            return None
+    
+        # Enhance the report with student names
+        if 'StudentID' in attendance_data.columns:
+        # Create a copy to avoid SettingWithCopyWarning
+            enhanced_report = attendance_data.copy()
+        
+        # Add student names to the report
+            student_names = {}
+            for _, row in self.students.iterrows():
+                student_names[row['student_id']] = row['name']
+        
+        # Create a new column with student names
+            enhanced_report['name'] = enhanced_report['student_id'].map(
+                lambda sid: student_names.get(sid, 'Unknown')
+            )
+        
+        # Reorder columns for better readability
+            columns_order = ['AttendanceID', 'ClassID', 'StudentID', 'Student Name', 'Date', 'Status']
+            available_columns = [col for col in columns_order if col in enhanced_report.columns]
+            enhanced_report = enhanced_report[available_columns]
+        
+            return enhanced_report
+    
+        return attendance_data

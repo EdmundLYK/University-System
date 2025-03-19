@@ -56,6 +56,9 @@ class Teacher:
     def update_lesson_plans(self, lesson_id, teacher_id, class_id, subject, lesson_details, date, materials, learning_objectives, assessment):
         return self.school.add_lesson_plan(lesson_id, teacher_id, class_id, subject, lesson_details, date, materials, learning_objectives, assessment)
     
+    def attendance_report(self, class_id, date):
+        return self.school.attendance_report(class_id, date)
+
     # implement delete function for all
     # implement delete function for all
     # implement delete function for all
