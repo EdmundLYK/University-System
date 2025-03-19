@@ -139,12 +139,34 @@ class School:
             self.employees.at[index, 'password'] = password
         self.save_data()
     
-    def assign_teacher_to_class(self, class_id, teacher_id,):
+    def assign_teacher_to_class(self, class_id, teacher_id, date_str):
+        # First, check if the teacher exists.
         if teacher_id not in self.employees['employee_id'].values:
             return False
-        schedule_details = {'classID': class_id, 'TeacherID': teacher_id,}        
-        self.schedules = pd.concat([self.schedules, pd.DataFrame([schedule_details])], ignore_index=True)
-        self.save_data()
+
+        # Convert the input date string to a datetime object.
+        try:
+            input_date = pd.to_datetime(date_str, format="%Y-%m-%d")
+        except Exception as e:
+            print("Date conversion error:", e)
+            return False
+
+        # Ensure the 'Date' column in schedules is in datetime format.
+        # Note: This conversion should ideally happen once (e.g., when loading the CSV).
+        self.schedules['Date'] = pd.to_datetime(self.schedules['Date'], errors='coerce')
+
+        # Find the row in schedules matching both the class_id and the converted date.
+        matching_rows = self.schedules[(self.schedules['classID'] == class_id) & (self.schedules['Date'] == input_date)]
+
+        # If a matching row exists, update its TeacherID.
+        if not matching_rows.empty:
+            row_index = matching_rows.index[0]
+            self.schedules.at[row_index, 'TeacherID'] = teacher_id
+            self.save_data()
+            return True
+        else:
+            # No matching row found; let the caller know so they can retry.
+            return False
     
     def mark_attendance(self, class_id, student_id, date, status):
         new_id = 1 if self.attendance.empty else self.attendance['AttendanceID'].max() + 1
@@ -183,29 +205,56 @@ class School:
         self.save_data()
 
     def update_class_details(self, class_id, teacher_id, class_name, date, duration, max_students, subject):
-        # First check if the teacher exists
+        # First, check if the teacher exists
         if teacher_id not in self.employees['employee_id'].values:
             return False
-        
-        # Then find the row in schedules where classID matches
-        if class_id not in self.schedules['classID'].values:
-            return False
-        
-        # Get the index of the class in the schedules DataFrame
-        class_index = self.schedules[self.schedules['classID'] == class_id].index[0]
-        
-        # Update the fields if they are provided
-        if class_name:
-            self.schedules.at[class_index, 'ClassName'] = class_name
-        if date:
-            self.schedules.at[class_index, 'Date'] = date
-        if duration:
-            self.schedules.at[class_index, 'Duration'] = duration
-        if max_students:
-            self.schedules.at[class_index, 'MaxStudents'] = max_students
-        if subject:
-            self.schedules.at[class_index, 'Subject'] = subject
-        
+
+        # Look for rows in schedules with the matching class_id
+        matching_rows = self.schedules[self.schedules['classID'] == class_id]
+
+        if not matching_rows.empty:
+            # Check if any of these rows already have the same date
+            same_date_rows = matching_rows[matching_rows['Date'] == date]
+            if not same_date_rows.empty:
+                # If a row with the same date exists, update its fields.
+                # (Assuming only one row should be updated; if multiple exist, update the first occurrence.)
+                row_index = same_date_rows.index[0]
+                if class_name:
+                    self.schedules.at[row_index, 'ClassName'] = class_name
+                if date:
+                    self.schedules.at[row_index, 'Date'] = date
+                if duration:
+                    self.schedules.at[row_index, 'Duration'] = duration
+                if max_students:
+                    self.schedules.at[row_index, 'MaxStudents'] = max_students
+                if subject:
+                    self.schedules.at[row_index, 'Subject'] = subject
+            else:
+                # No matching date found for this class ID; create a new row.
+                new_row = {
+                    'classID': class_id,
+                    'TeacherID': teacher_id,
+                    'ClassName': class_name,
+                    'Date': date,
+                    'Duration': duration,
+                    'MaxStudents': max_students,
+                    'Subject': subject
+                }
+                # Insert at the next available index.
+                self.schedules.loc[len(self.schedules)] = new_row
+        else:
+            # If no row with the given class_id exists, add a new row.
+            new_row = {
+                'classID': class_id,
+                'TeacherID': teacher_id,
+                'ClassName': class_name,
+                'Date': date,
+                'Duration': duration,
+                'MaxStudents': max_students,
+                'Subject': subject
+            }
+            self.schedules.loc[len(self.schedules)] = new_row
+
         self.save_data()
         return True
 
@@ -364,7 +413,7 @@ class School:
             attendance_data = self.attendance[self.attendance['ClassID'] == class_id]
             if not attendance_data.empty:
                 # Convert status to numeric (1 for present, 0 for absent)
-                attendance_data['numeric_status'] = attendance_data['Status'].apply(
+                attendance_data.loc[:, 'numeric_status'] = attendance_data['Status'].apply(
                     lambda x: 1 if x.lower() == 'present' else 0
                 )
                 

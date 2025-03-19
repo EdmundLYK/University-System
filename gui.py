@@ -625,13 +625,16 @@ class ClassManagementFrame(tk.Frame):
                  command=self.assign_teacher).grid(row=0, column=0, padx=5, pady=5)
           
            # New Generate Report button
-        tk.Button(button_panel, text="Generate Report", font=btn_font, 
+        tk.Button(button_panel, text="Attendance Report", font=btn_font, 
                  command=self.generate_report).grid(row=0, column=1, padx=5, pady=5)
         
+        tk.Button(button_panel, text="Academic Report", font=btn_font, 
+                 command=self.generate_class_report).grid(row=0, column=2, padx=5, pady=5)
+
         # Add refresh button
         refresh_btn = tk.Button(button_panel, text="🔄", font=btn_font, bg="#4CAF50", fg="white", 
                               command=self.display_class_schedules)
-        refresh_btn.grid(row=0, column=2, padx=5, pady=5)
+        refresh_btn.grid(row=0, column=3, padx=5, pady=5)
         
         # Data view panel
         self.data_panel = tk.Frame(self, bg="#FFFFFF")
@@ -673,8 +676,9 @@ class ClassManagementFrame(tk.Frame):
     
     def assign_teacher(self):
         fields = [
-            ("Class Name", ""),
-            ("Teacher ID", "")
+            ("Class ID", ""),
+            ("Teacher ID", ""),
+            ("Date (YYYY-MM-DD)", ""),  # Updated the label to the standard format.
         ]
         
         def submit(values):
@@ -684,14 +688,22 @@ class ClassManagementFrame(tk.Frame):
                 messagebox.showerror("Error", "Invalid Teacher ID.")
                 return False
             
-            self.admin.assign_teacher_to_class(values["Class Name"], teacher_id)
-            messagebox.showinfo("Success", "Teacher assigned to class.")
-            # Refresh the display
-            self.display_class_schedules()
-            return True
+            class_id = values["Class ID"].strip()  # Optionally strip extra whitespace.
+            date_input = values["Date (YYYY-MM-DD)"].strip()
+            
+            # Call the function that checks class_id and date before updating.
+            result = self.admin.assign_teacher_to_class(class_id, teacher_id, date_input)
+            if result:
+                messagebox.showinfo("Success", "Teacher assigned to class.")
+                # Refresh the display.
+                self.display_class_schedules()
+                return True
+            else:
+                messagebox.showerror("Error", "No matching schedule entry found for the given Class ID and Date. Please try again.")
+                return False
         
         FormWindow(self, "Assign Teacher", fields, submit)
-        
+            
     def generate_report(self):
         # New function to generate the attendance report
         fields = [
@@ -724,6 +736,94 @@ class ClassManagementFrame(tk.Frame):
             return True
         
         FormWindow(self, "Generate Attendance Report", fields, submit)
+
+    def generate_class_report(self):
+        fields = [
+            ("Class ID", "")
+        ]
+        
+        def submit(values):
+            try:
+                class_id = int(values["Class ID"])
+                
+                # Generate the report
+                report = self.admin.analysis_report(class_id)
+                
+                if 'error' in report:
+                    messagebox.showerror("Error", f"Failed to generate report: {report['error']}")
+                    return False
+                
+                # Create a new window to display the report
+                report_window = tk.Toplevel()
+                report_window.title(f"Analysis Report for {report.get('class_name', f'Class {class_id}')}")
+                report_window.geometry("800x600")
+                
+                # Create a notebook for tabs
+                notebook = ttk.Notebook(report_window)
+                notebook.pack(fill="both", expand=True, padx=10, pady=10)
+                
+                # Summary tab
+                summary_tab = tk.Frame(notebook)
+                notebook.add(summary_tab, text="Summary")
+                
+                # Display summary information
+                summary_text = (
+                    f"Class: {report.get('class_name', f'Class {class_id}')}\n\n"
+                    f"Attendance Statistics:\n"
+                    f"  - Total Records: {report['attendance']['count']}\n"
+                    f"  - Present Rate: {report['attendance']['present_rate']:.2f}%\n"
+                    f"  - Standard Deviation: {report['attendance']['std_dev']:.2f}%\n\n"
+                    f"Marks Statistics:\n"
+                    f"  - Total Students: {report['marks']['count']}\n"
+                    f"  - Average Mark: {report['marks']['average']:.2f}\n"
+                    f"  - Standard Deviation: {report['marks']['std_dev']:.2f}"
+                )
+                
+                summary_label = tk.Label(summary_tab, text=summary_text, justify="left", 
+                                        font=("Arial", 12), padx=20, pady=20)
+                summary_label.pack(anchor="nw")
+                
+                # Display summary plot if available
+                if 'summary' in report['plots']:
+                    summary_img = tk.PhotoImage(file=report['plots']['summary'])
+                    summary_img_label = tk.Label(summary_tab, image=summary_img)
+                    summary_img_label.image = summary_img  # Keep a reference to prevent garbage collection
+                    summary_img_label.pack(pady=10)
+                
+                # Attendance tab
+                if 'attendance' in report['plots']:
+                    attendance_tab = tk.Frame(notebook)
+                    notebook.add(attendance_tab, text="Attendance")
+                    
+                    attendance_img = tk.PhotoImage(file=report['plots']['attendance'])
+                    attendance_img_label = tk.Label(attendance_tab, image=attendance_img)
+                    attendance_img_label.image = attendance_img  # Keep a reference
+                    attendance_img_label.pack(pady=10)
+                
+                # Marks tab
+                if 'marks' in report['plots']:
+                    marks_tab = tk.Frame(notebook)
+                    notebook.add(marks_tab, text="Marks")
+                    
+                    marks_img = tk.PhotoImage(file=report['plots']['marks'])
+                    marks_img_label = tk.Label(marks_tab, image=marks_img)
+                    marks_img_label.image = marks_img  # Keep a reference
+                    marks_img_label.pack(pady=10)
+                
+                # Ensure the window comes to the front
+                report_window.lift()
+                report_window.attributes('-topmost', True)
+                report_window.after_idle(report_window.attributes, '-topmost', False)
+                
+                # Focus on the window
+                report_window.focus_force()
+                
+                return True
+            except Exception as e:
+                messagebox.showerror("Error", f"Failed to generate report: {str(e)}")
+                return False
+        
+        FormWindow(self, "Generate Analysis Report", fields, submit)
 
 # ------------------ Teacher Dashboard ------------------
 class TeacherDashboard(tk.Frame):
@@ -935,7 +1035,7 @@ class AttendanceManagementFrame(tk.Frame):
     
     def mark_attendance(self):
         fields = [
-            ("Class Name", ""),
+            ("Class ID", ""),
             ("Date (YYYY-MM-DD)", ""),
             ("Student ID", ""),
             ("Status", "")
@@ -952,7 +1052,7 @@ class AttendanceManagementFrame(tk.Frame):
                 messagebox.showerror("Error", "Status must be 'present' or 'absent'.")
                 return False
             
-            self.teacher.mark_attendance(values["Class Name"], values["Date (YYYY-MM-DD)"], std_id, values["Status"])
+            self.teacher.mark_attendance(values["Class ID"], values["Date (YYYY-MM-DD)"], std_id, values["Status"])
             messagebox.showinfo("Success", "Attendance marked.")
             self.display_attendance_data()  # Refresh after making changes
             return True
@@ -1314,8 +1414,8 @@ class ProfileManagementFrame(tk.Frame):
         fields = [
             ("Class ID", ""),
             ("Class Name", ""),
-            ("Date", ""),
-            ("Duration", ""),
+            ("Date(YYYY-MM-DD)", ""),
+            ("Duration(Mins)", ""),
             ("Max Students", ""),
             ("Subject", "")
         ]
@@ -1333,8 +1433,8 @@ class ProfileManagementFrame(tk.Frame):
                 class_id, 
                 self.teacher.employee_id, 
                 values["Class Name"], 
-                values["Date"], 
-                values["Duration"], 
+                values["Date(YYYY-MM-DD)"], 
+                values["Duration(Mins)"], 
                 max_students, 
                 values["Subject"]
             )

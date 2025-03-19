@@ -24,8 +24,8 @@ class Admin:
     def update_student(self, student_id, name=None, age=None, class_id=None, mark=None):
         return self.school.update_student(student_id, name, age, class_id, mark)
 
-    def assign_teacher_to_class(self, class_id, teacher_id):
-        self.school.assign_teacher_to_class( class_id, teacher_id)
+    def assign_teacher_to_class(self, class_id, teacher_id, date):
+        self.school.assign_teacher_to_class( class_id, teacher_id, date)
     
     def analysis_report(self, class_id):
         return self.school.analysis_report(class_id)

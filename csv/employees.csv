@@ -3,5 +3,4 @@ employee_id,name,contact,position,username,password,role
 2,edmund,1123,admin,ed,012,admin
 4,testing,12,teacher,test,1234,teacher
 5,admin,123,admin,admin,123,admin
-6,staff,123,staff,,,staff
 7,testing2,1234,teacher,test2,123,teacher
