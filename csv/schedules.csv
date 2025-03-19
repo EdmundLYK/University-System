@@ -1,2 +1,6 @@
-classID,TeacherID,ClassName,Time,Day,Duration,MaxStudents,Subject
-1,5,,,,,,
+classID,TeacherID,ClassName,Date,Duration,MaxStudents,Subject
+1,4.0,,,,,
+2,3.0,,,,,
+3,4.0,,,,,
+4,2.0,,,,,
+2,2.0,,,,,

@@ -1,5 +1,9 @@
 student_id,name,age,class,marks
-1,student,19,1,
-2,edmund,20,3,80
-4,100,22,6,
+1,student,19,1,70.0
+2,edmund,20,3,90.0
 5,jojo,jo,13,
+6,a,20,1,
+7,b,19,2,
+8,c,21,3,80.0
+9,d,22,4,50.0
+10,30,10,5,
