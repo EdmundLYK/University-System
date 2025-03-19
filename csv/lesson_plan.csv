@@ -1,1 +1,1 @@
-LessonID,TeacherID,ClassID,Subject,LessonDetails,Date,Materials,LearningObjectives,Assessment
+LessonID,TeacherID,ClassID,Subject,LessonDetails,Date,LearningObjectives,Assessment

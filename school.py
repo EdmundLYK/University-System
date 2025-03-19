@@ -9,8 +9,8 @@ class School:
             ('csv/employees.csv', ['employee_id', 'name', 'contact', 'position', 'username', 'password', 'role']),
             ('csv/students.csv', ['student_id', 'name', 'age', 'class', 'marks']),
             ('csv/attendance.csv', ['AttendanceID', 'ClassID', 'StudentID', 'Date', 'Status']),
-            ('csv/schedules.csv', ['classID', 'TeacherID', 'ClassName', 'Time', 'Day', 'Duration', 'MaxStudents', 'Subject']),
-            ('csv/lesson_plan.csv', ['LessonID','TeacherID','ClassID','Subject','LessonDetails','Date','Materials','LearningObjectives','Assessment'])
+            ('csv/schedules.csv', ['classID', 'TeacherID', 'ClassName', 'Date', 'Duration', 'MaxStudents', 'Subject']),
+            ('csv/lesson_plan.csv', ['LessonID','TeacherID','ClassID','Subject','LessonDetails','Date','LearningObjectives','Assessment'])
         ]
         # Ensure all CSV files exist
         for filename, headers in self.csv_files:
@@ -19,7 +19,8 @@ class School:
         self.employees = pd.DataFrame(columns=['employee_id', 'name', 'contact', 'position', 'username', 'password', 'role'])
         self.students = pd.DataFrame(columns=['student_id', 'name', 'age', 'class', 'marks']) 
         self.attendance = pd.DataFrame(columns=['date', 'class', 'student_id', 'status'])
-        self.schedules = pd.DataFrame(columns=['classID', 'TeacherID', 'ClassName', 'Time', 'Day', 'Duration', 'MaxStudents', 'Subject'])
+        self.schedules = pd.DataFrame(columns=['classID', 'TeacherID', 'ClassName', 'Date', 'Duration', 'MaxStudents', 'Subject'])
+        self.lesson_plan = pd.DataFrame(columns=['LessonID','TeacherID','ClassID','Subject','LessonDetails','Date','LearningObjectives','Assessment'])
         self.load_data()
 
     def ensure_csv_exists(self, filename, headers=None):
@@ -176,17 +177,15 @@ class School:
             self.students.at[index, 'mark'] = mark
         self.save_data()
 
-    def update_class_details(self, class_id, teacher_id, class_name, time, day, duration, max_students, subject):
+    def update_class_details(self, class_id, teacher_id, class_name, date, duration, max_students, subject):
         if teacher_id not in self.employees['employee_id'].values:
             return False
         index = self.employees[self.employees['employee_id'] == teacher_id].index[0]
 
         if class_name:
             self.schedules.at[index, 'ClassName'] = class_name
-        if time:
-            self.students.at[index, 'Time'] = time
-        if day:
-            self.students.at[index, 'Day'] = day
+        if date:
+            self.students.at[index, 'Date'] = date
         if duration:
             self.students.at[index, 'Duration'] = duration
         if max_students:
@@ -195,19 +194,18 @@ class School:
             self.students.at[index, 'Subject'] = subject
         self.save_data()
 
-    def add_lesson_plan(self, teacher_id, class_id, subject, lesson_details, date, materials, learning_objectives, assessment):
+    def add_lesson_plan(self, teacher_id, class_id, subject, lesson_details, date, learning_objectives, assessment):
         new_id = 1 if self.lesson_plan.empty else self.lesson_plan['LessonID'].max() + 1
         lesson_details = {
-            'LessonID': new_id, 
-            'TeacherID': teacher_id, 
-            'ClassID': class_id, 
-            'Subject': subject,
-            'LessonDetails': lesson_details, 
-            'Date': date, 
-            'Materials': materials, 
-            'LearningObjectives': learning_objectives, 
-            'Assessment': assessment, 
-            }
+        'LessonID': new_id, 
+        'TeacherID': teacher_id, 
+        'ClassID': class_id, 
+        'Subject': subject,
+        'LessonDetails': lesson_details, 
+        'Date': date, 
+        'LearningObjectives': learning_objectives, 
+        'Assessment': assessment,
+        }
         self.lesson_plan = pd.concat([self.lesson_plan, pd.DataFrame([lesson_details])], ignore_index=True)
         self.save_data()
         return new_id

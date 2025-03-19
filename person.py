@@ -47,14 +47,14 @@ class Teacher:
     def update_teacher(self, name=None, contact=None, username=None, password=None):
         return self.school.update_teacher(self.employee_id, name, contact, username, password)
     
-    def update_class_details(self, class_id, teacher_id, class_name, time, day, duration, max_students, subject):
-        return self.school.update_class_details( class_id, teacher_id, class_name, time, day, duration, max_students, subject)
+    def update_class_details(self, class_id, teacher_id, class_name, date, duration, max_students, subject):
+        return self.school.update_class_details( class_id, teacher_id, class_name, date, duration, max_students, subject)
 
-    def add_lesson_plan(self, teacher_id, class_id, subject, lesson_details, date, materials, learning_objectives, assessment):
-        return self.school.add_lesson_plan( teacher_id, class_id, subject, lesson_details, date, materials, learning_objectives, assessment)
+    def add_lesson_plan(self, teacher_id, class_id, subject, lesson_details, date, learning_objectives, assessment):
+        return self.school.add_lesson_plan( teacher_id, class_id, subject, lesson_details, date, learning_objectives, assessment)
     
-    def update_lesson_plans(self, lesson_id, teacher_id, class_id, subject, lesson_details, date, materials, learning_objectives, assessment):
-        return self.school.add_lesson_plan(lesson_id, teacher_id, class_id, subject, lesson_details, date, materials, learning_objectives, assessment)
+    def update_lesson_plans(self, lesson_id, teacher_id, class_id, subject, lesson_details, date, learning_objectives, assessment):
+        return self.school.add_lesson_plan(lesson_id, teacher_id, class_id, subject, lesson_details, date, learning_objectives, assessment)
     
     def attendance_report(self, class_id, date):
         return self.school.attendance_report(class_id, date)

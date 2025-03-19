@@ -1087,6 +1087,10 @@ class ProfileManagementFrame(tk.Frame):
         tk.Button(button_panel, text="Update Profile", font=btn_font, command=self.update_profile).pack(pady=5)
         tk.Button(button_panel, text="View Assigned Classes", font=btn_font, command=self.view_assigned_classes).pack(pady=5)
         
+        # Add new buttons for class schedules and lesson plans
+        tk.Button(button_panel, text="Manage Class Schedules", font=btn_font, command=self.manage_class_schedules).pack(pady=5)
+        tk.Button(button_panel, text="Create Lesson Plans", font=btn_font, command=self.create_lesson_plans).pack(pady=5)
+        
         # Profile info display
         profile_frame = tk.Frame(self, bg="#FFFFFF", bd=2, relief=tk.RAISED)
         profile_frame.pack(fill="both", expand=True, padx=10, pady=10)
@@ -1095,38 +1099,52 @@ class ProfileManagementFrame(tk.Frame):
         self.display_profile_data(profile_frame)
     
     def display_profile_data(self, frame):
-        # Show teacher profile information
+    # Show teacher profile information
         try:
-            # Get teacher data (this would depend on your actual implementation)
-            profile_data = {
-                "ID": self.teacher.employee_id,
-                "Name": self.teacher.name,
-                "Contact": self.teacher.contact,
-                "Username": self.teacher.username,
-                "Position": "Teacher"
-            }
+        # Read the employees CSV directly
+            employees_df = pd.read_csv("csv/employees.csv")
+        
+        # Filter for this teacher's employee_id
+            teacher_data = employees_df[employees_df['employee_id'] == self.teacher.employee_id]
+        
+            if not teacher_data.empty:
+            # Get the first (and presumably only) row
+                teacher_row = teacher_data.iloc[0]
             
             # Display profile
-            header = tk.Label(frame, text="Teacher Profile", font=("Arial", 16, "bold"), 
-                              bg="#FFFFFF", fg="#000000", pady=5)
-            header.pack(pady=10)
+                profile_data = {
+                "ID": teacher_row['employee_id'],
+                "Name": teacher_row['name'],
+                "Contact": teacher_row['contact'],
+                "Position": teacher_row['position'],
+                "Username": self.teacher.username,  # This we know is available
+                "Role": teacher_row['role']
+                }
+            
+                header = tk.Label(frame, text="Teacher Profile", font=("Arial", 16, "bold"), 
+                            bg="#FFFFFF", fg="#000000", pady=5)
+                header.pack(pady=10)
             
             # Display each field
-            for field, value in profile_data.items():
-                field_frame = tk.Frame(frame, bg="#FFFFFF")
-                field_frame.pack(fill="x", padx=20, pady=5)
+                for field, value in profile_data.items():
+                    field_frame = tk.Frame(frame, bg="#FFFFFF")
+                    field_frame.pack(fill="x", padx=20, pady=5)
                 
-                label = tk.Label(field_frame, text=f"{field}:", font=("Arial", 12, "bold"), 
+                    label = tk.Label(field_frame, text=f"{field}:", font=("Arial", 12, "bold"), 
                                 bg="#FFFFFF", width=15, anchor="w")
-                label.pack(side="left")
+                    label.pack(side="left")
                 
-                value_label = tk.Label(field_frame, text=str(value), font=("Arial", 12), 
-                                      bg="#FFFFFF", anchor="w")
-                value_label.pack(side="left", fill="x", expand=True)
+                    value_label = tk.Label(field_frame, text=str(value), font=("Arial", 12), 
+                                    bg="#FFFFFF", anchor="w")
+                    value_label.pack(side="left", fill="x", expand=True)
+            else:
+                error_label = tk.Label(frame, text=f"Teacher with ID {self.teacher.employee_id} not found.", 
+                                bg="#FFFFFF", fg="#FF0000", pady=10)
+                error_label.pack(fill="both", expand=True)
             
         except Exception as e:
             error_label = tk.Label(frame, text=f"Failed to load profile data:\n{e}", 
-                                  bg="#FFFFFF", fg="#FF0000", pady=10)
+                            bg="#FFFFFF", fg="#FF0000", pady=10)
             error_label.pack(fill="both", expand=True)
     
     def update_profile(self):
@@ -1194,6 +1212,81 @@ class ProfileManagementFrame(tk.Frame):
         
         # Add close button
         tk.Button(view_window, text="Close", font=("Inter", 12), command=view_window.destroy).pack(pady=10)
+
+    def manage_class_schedules(self):
+        fields = [
+            ("Class ID", ""),
+            ("Class Name", ""),
+            ("Date", ""),
+            ("Duration", ""),
+            ("Max Students", ""),
+            ("Subject", "")
+        ]
+        
+        def submit(values):
+            try:
+                class_id = int(values["Class ID"])
+                max_students = int(values["Max Students"])
+            except ValueError:
+                messagebox.showerror("Error", "Class ID and Max Students must be numbers.")
+                return False
+            
+            # Update class details in the database
+            result = self.teacher.update_class_details(
+                class_id, 
+                self.teacher.employee_id, 
+                values["Class Name"], 
+                values["Date"], 
+                values["Duration"], 
+                max_students, 
+                values["Subject"]
+            )
+            
+            if result is None or result:
+                messagebox.showinfo("Success", "Class schedule updated successfully.")
+                return True
+            else:
+                messagebox.showerror("Error", "Failed to update class schedule.")
+                return False
+        
+        FormWindow(self, "Manage Class Schedule", fields, submit)
+    
+    def create_lesson_plans(self):
+        fields = [
+            ("Class ID", ""),
+            ("Subject", ""),
+            ("Lesson Details", ""),
+            ("Date (YYYY-MM-DD)", ""),
+            ("Learning Objectives", ""),
+            ("Assessment Method", "")
+        ]
+        
+        def submit(values):
+            try:
+                class_id = int(values["Class ID"])
+            except ValueError:
+                messagebox.showerror("Error", "Class ID must be a number.")
+                return False
+            
+            # Add lesson plan to the database
+            new_lesson_id = self.teacher.add_lesson_plan(
+                self.teacher.employee_id,
+                class_id,
+                values["Subject"],
+                values["Lesson Details"],
+                values["Date (YYYY-MM-DD)"],
+                values["Learning Objectives"],
+                values["Assessment Method"]
+            )
+            
+            if new_lesson_id:
+                messagebox.showinfo("Success", f"Lesson plan created with ID: {new_lesson_id}")
+                return True
+            else:
+                messagebox.showerror("Error", "Failed to create lesson plan.")
+                return False
+        
+        FormWindow(self, "Create Lesson Plan", fields, submit)
 
 # ------------------ Main Application Controller ------------------
 class Application(tk.Tk):
