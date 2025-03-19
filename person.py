@@ -64,9 +64,3 @@ class Teacher:
     
     def analysis_report(self, class_id):
         return self.school.analysis_report(class_id)
-
-    # implement delete function for all
-    # implement delete function for all
-    # implement delete function for all
-    # implement delete function for all
-    # implement delete function for all
