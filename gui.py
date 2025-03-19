@@ -1,3 +1,4 @@
+from curses.panel import bottom_panel
 import tkinter as tk
 from tkinter import messagebox
 from tkinter import Canvas, Entry, Button, PhotoImage
@@ -20,7 +21,7 @@ class FormWindow(tk.Toplevel):
         self.title(title)
         
         # Set window size and center it
-        width, height = 1000, 500
+        width, height = 1000, 600
         x = (self.winfo_screenwidth() - width) // 2
         y = (self.winfo_screenheight() - height) // 2
         self.geometry(f"{width}x{height}+{x}+{y}")
@@ -199,7 +200,7 @@ class LoginFrame(tk.Frame):
         self.login_callback(username, password)
 
 # ------------------ Admin Dashboard ------------------
-# Modify AdminDashboard class to show frames instead of new windows
+
 
 class AdminDashboard(tk.Frame):
     def __init__(self, parent, admin):
@@ -209,7 +210,7 @@ class AdminDashboard(tk.Frame):
         self.configure(width=1000, height=700)
         self.pack_propagate(0)
         
-        # New nicer Admin Dashboard design
+        
         self.canvas = Canvas(
             self,
             bg="#FFFFFF",
@@ -225,11 +226,11 @@ class AdminDashboard(tk.Frame):
         self.canvas.create_image(500, 350, image=self.bg_image)
         
         self.canvas.create_text(
-            296, 16,
+            305, 29,
             anchor="nw",
-            text="Admin Dashboard",
+            text="ADMIN DASHBOARD",
             fill="#FFFFFF",
-            font=("InknutAntiqua SemiBold", 40 * -1)
+            font=("InknutAntiqua Bold", 40 * -1)
         )
         
         # Four main buttons
@@ -662,42 +663,208 @@ class TeacherDashboard(tk.Frame):
     def __init__(self, parent, teacher):
         super().__init__(parent)
         self.teacher = teacher
+        self.parent = parent
         self.configure(width=1000, height=700)
         self.pack_propagate(0)
         
+        
         self.canvas = Canvas(
             self,
-            width=1000,
+            bg="#FFFFFF",
             height=700,
+            width=1000,
             bd=0,
             highlightthickness=0,
-            relief="ridge",
-            bg="#8B0000"
+            relief="ridge"
         )
-        self.canvas.pack(fill="both", expand=True)
+        self.canvas.place(x=0, y=0)
         
-        # Bottom background: carbon.png
-        self.carbon_bg = PhotoImage(file=relative_to_assets("image_2.png"))
-        self.canvas.carbon_bg = self.carbon_bg
-        self.canvas.create_image(500, 350, image=self.carbon_bg)
+        self.bg_image = PhotoImage(file=relative_to_assets("image_2.png"))
+        self.canvas.create_image(500, 350, image=self.bg_image)
         
-        # Top overlapping background: image_1.png
-        self.top_bg = PhotoImage(file=relative_to_assets("image_1.png"))
-        self.canvas.top_bg = self.top_bg
-        self.canvas.create_image(500, 350, image=self.top_bg)
+        self.canvas.create_text(
+            220, 16,
+            anchor="nw",
+            text= f"TEACHER {self.teacher.username}'s DASHBOARD",
+            fill="#FFFFFF",
+            font=("InknutAntiqua Bold", 40 * -1)
+        )
         
-        header_text = f"Teacher ({self.teacher.username})'s Dashboard"
+        # Four main buttons 
+        self.button_image_1 = PhotoImage(file=relative_to_assets("attd.png")) 
+        self.button_1 = Button(
+            self,
+            image=self.button_image_1,
+            borderwidth=0,
+            highlightthickness=0,
+            command=self.open_attendance_management,
+            relief="flat"
+        )
+        self.button_1.place(x=124, y=194, width=243, height=118)
         
-        content_frame = tk.Frame(self.canvas, bg="#8B0000")
-        self.canvas.create_window(500, 350, window=content_frame, anchor="center")
+        # Add text overlay on button 1
+        self.canvas.create_text(
+            180, 230,
+            anchor="nw",
+            text="Attendance\nManagement",
+            fill="#FFFFFF",
+            font=("Inter Bold", 18 * -1)
+        )
         
-        tk.Label(content_frame, text=header_text, font=("Arial", 24), bg="#8B0000", fg="#FFFFFF").pack(pady=10)
+        self.button_image_3 = PhotoImage(file=relative_to_assets("ass.png"))
+        self.button_3 = Button(
+            self,
+            image=self.button_image_3,
+            borderwidth=0,
+            highlightthickness=0,
+            command=self.open_student_assessment,
+            relief="flat"
+        )
+        self.button_3.place(x=617, y=194, width=243, height=118)
         
-        btn_font = ("Inter", 20)
-        tk.Button(content_frame, text="Mark Attendance", font=btn_font, command=self.mark_attendance).pack(pady=5)
-        tk.Button(content_frame, text="Update Profile", font=btn_font, command=self.update_teacher).pack(pady=5)
-        tk.Button(content_frame, text="Update Student Mark", font=btn_font, command=self.update_student_mark).pack(pady=5)
-        tk.Button(content_frame, text="Logout", font=btn_font, command=parent.show_login).pack(pady=5)
+        # Add text overlay on button 3
+        self.canvas.create_text(
+            680, 230,
+            anchor="nw",
+            text="Student\nAssessment",
+            fill="#FFFFFF",
+            font=("Inter Bold", 18 * -1)
+        )
+        
+        self.button_image_4 = PhotoImage(file=relative_to_assets("prof.png"))
+        self.button_4 = Button(
+            self,
+            image=self.button_image_4,
+            borderwidth=0,
+            highlightthickness=0,
+            command=self.open_profile_management,
+            relief="flat"
+        )
+        self.button_4.place(x=124, y=444, width=243, height=118)
+        
+        # Add text overlay on button 4
+        self.canvas.create_text(
+            180, 480,
+            anchor="nw",
+            text="Profile\nManagement",
+            fill="#FFFFFF",
+            font=("Inter Bold", 18 * -1)
+        )
+        
+        self.button_image_2 = PhotoImage(file=relative_to_assets("logout.png"))
+        self.button_2 = Button(
+            self,
+            image=self.button_image_2,
+            borderwidth=0,
+            highlightthickness=0,
+            command=lambda: parent.show_login(),
+            relief="flat"
+        )
+        self.button_2.place(x=617, y=444, width=243, height=118)
+        
+        # Add text overlay on button 2
+        self.canvas.create_text(
+            700, 480,
+            anchor="nw",
+            text="Logout",
+            fill="#FFFFFF",
+            font=("Inter Bold", 18 * -1)
+        )
+        
+        # Container for management frames
+        self.management_container = tk.Frame(self)
+        self.current_management_frame = None
+
+    def show_management_frame(self, frame_class, *args):
+        # Remove any existing management frame
+        if self.current_management_frame is not None:
+            self.current_management_frame.destroy()
+            
+        # Create and place the management container if not already visible
+        self.management_container = tk.Frame(self, bg="#8B0000", bd=2, relief=tk.RAISED)
+        self.management_container.place(relx=0.5, rely=0.5, anchor="center", width=800, height=600)
+        
+        # Add a close button at the top
+        close_btn = tk.Button(self.management_container, text="X", font=("Arial", 12), 
+                             command=self.close_management_frame, bg="#FF0000", fg="#FFFFFF")
+        close_btn.pack(anchor="ne", padx=5, pady=5)
+        
+        # Create the new frame
+        self.current_management_frame = frame_class(self.management_container, *args)
+        self.current_management_frame.pack(fill="both", expand=True, padx=10, pady=10)
+    
+    def close_management_frame(self):
+        if self.management_container is not None:
+            self.management_container.destroy()
+            self.current_management_frame = None
+    
+    def open_attendance_management(self):
+        self.show_management_frame(AttendanceManagementFrame, self.teacher)
+    
+    def open_student_assessment(self):
+        self.show_management_frame(StudentAssessmentFrame, self.teacher)
+    
+    def open_profile_management(self):
+        self.show_management_frame(ProfileManagementFrame, self.teacher)
+    
+
+class AttendanceManagementFrame(tk.Frame):
+    def __init__(self, parent, teacher):
+        super().__init__(parent, bg="#8B0000")
+        self.teacher = teacher
+        
+        tk.Label(self, text="Attendance Management", font=("Arial", 20), bg="#8B0000", fg="#FFFFFF").pack(pady=10)
+        
+        # Button panel
+        button_panel = tk.Frame(self, bg="#8B0000")
+        button_panel.pack(pady=10)
+        
+        btn_font = ("Inter", 16)
+        tk.Button(button_panel, text="Mark Attendance", font=btn_font, command=self.mark_attendance).grid(row=0, column=0, padx=5, pady=5)
+        tk.Button(button_panel, text="View Attendance Records", font=btn_font, command=self.view_attendance).grid(row=0, column=1, padx=5, pady=5)
+        
+        # Add refresh button
+        refresh_btn = tk.Button(button_panel, text="🔄 Refresh", font=btn_font, bg="#4CAF50", fg="white", 
+                              command=self.display_attendance_data)
+        refresh_btn.grid(row=0, column=2, padx=5, pady=5)
+        
+        # Data view panel
+        self.data_panel = tk.Frame(self, bg="#FFFFFF")
+        self.data_panel.pack(fill="both", expand=True, padx=10, pady=10)
+        
+        # Display attendance data by default
+        self.display_attendance_data()
+    
+    def display_attendance_data(self):
+        # Clear any existing widgets
+        for widget in self.data_panel.winfo_children():
+            widget.destroy()
+        
+        try:
+            df = pd.read_csv("csv/attendance.csv")
+            
+            # Create a header with refresh time
+            header_frame = tk.Frame(self.data_panel, bg="#FFFFFF")
+            header_frame.pack(fill="x")
+            
+            header = tk.Label(header_frame, text="Attendance Records", font=("Arial", 16, "bold"), 
+                              bg="#FFFFFF", fg="#000000", pady=5)
+            header.pack(side="left")
+            
+            refresh_time = tk.Label(header_frame, text=f"Last refreshed: {pd.Timestamp.now().strftime('%H:%M:%S')}", 
+                                   font=("Arial", 10), bg="#FFFFFF", fg="#666666")
+            refresh_time.pack(side="right", padx=10)
+            
+            # Create a scrolled text widget for displaying the data
+            st = ScrolledText(self.data_panel, font=("Consolas", 10))
+            st.pack(fill="both", expand=True, padx=5, pady=5)
+            st.insert(tk.END, df.to_string())
+            st.config(state=tk.DISABLED)
+            
+        except Exception as e:
+            error_label = tk.Label(self.data_panel, text=f"Failed to read attendance.csv:\n{e}", 
+                                  bg="#FFFFFF", fg="#FF0000", pady=10)
+            error_label.pack(fill="both", expand=True)
     
     def mark_attendance(self):
         fields = [
@@ -720,28 +887,84 @@ class TeacherDashboard(tk.Frame):
             
             self.teacher.mark_attendance(values["Class Name"], values["Date (YYYY-MM-DD)"], std_id, values["Status"])
             messagebox.showinfo("Success", "Attendance marked.")
+            self.display_attendance_data()  # Refresh after making changes
             return True
         
         FormWindow(self, "Mark Attendance", fields, submit)
     
-    def update_teacher(self):
+    def view_attendance(self):
         fields = [
-            ("Name", ""),
-            ("Contact", ""),
-            ("Username", ""),
-            ("Password", "")
+            ("Class Name", ""),
+            ("Date (YYYY-MM-DD)", "")
         ]
         
         def submit(values):
-            result = self.teacher.update_teacher(values["Name"], values["Contact"], values["Username"], values["Password"])
-            if result is None or result:
-                messagebox.showinfo("Success", "Profile updated successfully.")
-                return True
-            else:
-                messagebox.showerror("Error", "Failed to update profile.")
-                return False
+            # This would filter the attendance display based on class and date
+            messagebox.showinfo("Info", f"Viewing attendance for {values['Class Name']} on {values['Date (YYYY-MM-DD)']}")
+            # Implementation would depend on your actual data structure
+            self.display_attendance_data()
+            return True
         
-        FormWindow(self, "Update Profile", fields, submit)
+        FormWindow(self, "View Attendance", fields, submit)
+
+class StudentAssessmentFrame(tk.Frame):
+    def __init__(self, parent, teacher):
+        super().__init__(parent, bg="#8B0000")
+        self.teacher = teacher
+        
+        tk.Label(self, text="Student Assessment", font=("Arial", 20), bg="#8B0000", fg="#FFFFFF").pack(pady=10)
+        
+        # Button panel
+        button_panel = tk.Frame(self, bg="#8B0000")
+        button_panel.pack(pady=10)
+        
+        btn_font = ("Inter", 16)
+        tk.Button(button_panel, text="Update Student Mark", font=btn_font, command=self.update_student_mark).grid(row=0, column=0, padx=5, pady=5)
+        tk.Button(button_panel, text="View Class Report", font=btn_font, command=self.view_class_report).grid(row=0, column=1, padx=5, pady=5)
+        
+        # Add refresh button
+        refresh_btn = tk.Button(button_panel, text="🔄 Refresh", font=btn_font, bg="#4CAF50", fg="white", 
+                              command=self.display_marks_data)
+        refresh_btn.grid(row=0, column=2, padx=5, pady=5)
+        
+        # Data view panel
+        self.data_panel = tk.Frame(self, bg="#FFFFFF")
+        self.data_panel.pack(fill="both", expand=True, padx=10, pady=10)
+        
+        # Display marks data by default
+        self.display_marks_data()
+    
+    def display_marks_data(self):
+        # Clear any existing widgets
+        for widget in self.data_panel.winfo_children():
+            widget.destroy()
+        
+        try:
+            # Read students.csv which contains marks
+            df = pd.read_csv("csv/students.csv")
+            
+            # Create a header with refresh time
+            header_frame = tk.Frame(self.data_panel, bg="#FFFFFF")
+            header_frame.pack(fill="x")
+            
+            header = tk.Label(header_frame, text="Student Marks", font=("Arial", 16, "bold"), 
+                              bg="#FFFFFF", fg="#000000", pady=5)
+            header.pack(side="left")
+            
+            refresh_time = tk.Label(header_frame, text=f"Last refreshed: {pd.Timestamp.now().strftime('%H:%M:%S')}", 
+                                   font=("Arial", 10), bg="#FFFFFF", fg="#666666")
+            refresh_time.pack(side="right", padx=10)
+            
+            # Create a scrolled text widget for displaying the data
+            st = ScrolledText(self.data_panel, font=("Consolas", 10))
+            st.pack(fill="both", expand=True, padx=5, pady=5)
+            st.insert(tk.END, df.to_string())
+            st.config(state=tk.DISABLED)
+            
+        except Exception as e:
+            error_label = tk.Label(self.data_panel, text=f"Failed to read students.csv:\n{e}", 
+                                  bg="#FFFFFF", fg="#FF0000", pady=10)
+            error_label.pack(fill="both", expand=True)
     
     def update_student_mark(self):
         fields = [
@@ -756,11 +979,155 @@ class TeacherDashboard(tk.Frame):
                 messagebox.showerror("Error", "Invalid Student ID.")
                 return False
             
-            self.teacher.school.update_student(std_id, values["Mark"])
+            try:
+                mark = float(values["Mark"])
+                if mark < 0 or mark > 100:
+                    raise ValueError("Mark must be between 0 and 100")
+            except ValueError as e:
+                messagebox.showerror("Error", f"Invalid mark: {e}")
+                return False
+            
+            self.teacher.update_student_mark(std_id, values["Mark"])
             messagebox.showinfo("Success", f"Student ID {std_id} mark updated successfully.")
+            self.display_marks_data()  # Refresh after making changes
             return True
         
         FormWindow(self, "Update Student Mark", fields, submit)
+    
+    def view_class_report(self):
+        fields = [
+            ("Class Name", "")
+        ]
+        
+        def submit(values):
+            messagebox.showinfo("Info", f"Generating report for {values['Class Name']}")
+            # Implementation would depend on your actual data structure
+            return True
+        
+        FormWindow(self, "View Class Report", fields, submit)
+
+class ProfileManagementFrame(tk.Frame):
+    def __init__(self, parent, teacher):
+        super().__init__(parent, bg="#8B0000")
+        self.teacher = teacher
+        
+        tk.Label(self, text="Profile Management", font=("Arial", 20), bg="#8B0000", fg="#FFFFFF").pack(pady=10)
+        
+        # Button panel
+        button_panel = tk.Frame(self, bg="#8B0000")
+        button_panel.pack(pady=10)
+        
+        btn_font = ("Inter", 16)
+        tk.Button(button_panel, text="Update Profile", font=btn_font, command=self.update_profile).pack(pady=5)
+        tk.Button(button_panel, text="View Assigned Classes", font=btn_font, command=self.view_assigned_classes).pack(pady=5)
+        
+        # Profile info display
+        profile_frame = tk.Frame(self, bg="#FFFFFF", bd=2, relief=tk.RAISED)
+        profile_frame.pack(fill="both", expand=True, padx=10, pady=10)
+        
+        # Display teacher profile data
+        self.display_profile_data(profile_frame)
+    
+    def display_profile_data(self, frame):
+        # Show teacher profile information
+        try:
+            # Get teacher data (this would depend on your actual implementation)
+            profile_data = {
+                "ID": self.teacher.employee_id,
+                "Name": self.teacher.name,
+                "Contact": self.teacher.contact,
+                "Username": self.teacher.username,
+                "Position": "Teacher"
+            }
+            
+            # Display profile
+            header = tk.Label(frame, text="Teacher Profile", font=("Arial", 16, "bold"), 
+                              bg="#FFFFFF", fg="#000000", pady=5)
+            header.pack(pady=10)
+            
+            # Display each field
+            for field, value in profile_data.items():
+                field_frame = tk.Frame(frame, bg="#FFFFFF")
+                field_frame.pack(fill="x", padx=20, pady=5)
+                
+                label = tk.Label(field_frame, text=f"{field}:", font=("Arial", 12, "bold"), 
+                                bg="#FFFFFF", width=15, anchor="w")
+                label.pack(side="left")
+                
+                value_label = tk.Label(field_frame, text=str(value), font=("Arial", 12), 
+                                      bg="#FFFFFF", anchor="w")
+                value_label.pack(side="left", fill="x", expand=True)
+            
+        except Exception as e:
+            error_label = tk.Label(frame, text=f"Failed to load profile data:\n{e}", 
+                                  bg="#FFFFFF", fg="#FF0000", pady=10)
+            error_label.pack(fill="both", expand=True)
+    
+    def update_profile(self):
+        fields = [
+            ("Name", self.teacher.name if hasattr(self.teacher, 'name') else ""),
+            ("Contact", self.teacher.contact if hasattr(self.teacher, 'contact') else ""),
+            ("Username", self.teacher.username if hasattr(self.teacher, 'username') else ""),
+            ("Password", "")
+        ]
+        
+        def submit(values):
+            result = self.teacher.update_teacher(values["Name"], values["Contact"], values["Username"], values["Password"])
+            if result is None or result:
+                messagebox.showinfo("Success", "Profile updated successfully.")
+                # Refresh the profile display
+                for widget in self.winfo_children():
+                    if isinstance(widget, tk.Frame) and widget != bottom_panel:
+                        widget.destroy()
+                
+                profile_frame = tk.Frame(self, bg="#FFFFFF", bd=2, relief=tk.RAISED)
+                profile_frame.pack(fill="both", expand=True, padx=10, pady=10)
+                self.display_profile_data(profile_frame)
+                return True
+            else:
+                messagebox.showerror("Error", "Failed to update profile.")
+                return False
+        
+        FormWindow(self, "Update Profile", fields, submit)
+    
+    def view_assigned_classes(self):
+        # Create a new window to display assigned classes
+        view_window = tk.Toplevel(self)
+        view_window.title("Assigned Classes")
+        
+        width, height = 600, 400
+        x = (view_window.winfo_screenwidth() - width) // 2
+        y = (view_window.winfo_screenheight() - height) // 2
+        view_window.geometry(f"{width}x{height}+{x}+{y}")
+        view_window.configure(bg="#FFFFFF")
+        
+        try:
+            # Read schedules to find classes assigned to this teacher
+            schedules_df = pd.read_csv("csv/schedules.csv")
+            
+            # Filter for this teacher's ID
+            teacher_classes = schedules_df[schedules_df['teacher_id'] == self.teacher.employee_id]
+            
+            if teacher_classes.empty:
+                message = "No classes currently assigned to you."
+            else:
+                message = "Your assigned classes:\n\n" + teacher_classes.to_string()
+            
+            # Display the data
+            tk.Label(view_window, text="Assigned Classes", font=("Arial", 16, "bold"), 
+                   bg="#FFFFFF", pady=10).pack()
+                   
+            st = ScrolledText(view_window, font=("Consolas", 10))
+            st.pack(fill="both", expand=True, padx=10, pady=10)
+            st.insert(tk.END, message)
+            st.config(state=tk.DISABLED)
+            
+        except Exception as e:
+            tk.Label(view_window, text=f"Failed to load class data:\n{e}", 
+                   bg="#FFFFFF", fg="#FF0000", pady=10).pack(fill="both", expand=True)
+        
+        # Add close button
+        tk.Button(view_window, text="Close", font=("Inter", 12), command=view_window.destroy).pack(pady=10)
 
 # ------------------ Main Application Controller ------------------
 class Application(tk.Tk):
