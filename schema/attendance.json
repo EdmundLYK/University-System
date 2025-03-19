@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "AttendanceID": {
+      "type": "integer"
+    },
+    "ClassID": {
+      "type": "integer"
+    },
+    "Date": {
+      "type": "string",
+      "format": "date"
+    },
+    "StudentID": {
+      "type": "integer"
+    },
+    "Status": {
+      "type": "string",
+      "enum": ["present", "absent"]
+    }
+  },
+  "required": ["AttendanceID", "ClassID", "Date", "StudentID", "Status"],
+  "additionalProperties": false
+}

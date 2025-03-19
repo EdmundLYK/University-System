@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "LessonID": {
+      "type": "integer"
+    },
+    "TeacherID": {
+      "type": "integer"
+    },
+    "ClassID": {
+      "type": "integer"
+    },
+    "Subject": {
+      "type": "string"
+    },
+    "LessonDetails": {
+      "type": "string"
+    },
+    "Date": {
+      "type": "string",
+      "format": "date"
+    },
+    "LearningObjectives": {
+      "type": "string"
+    },
+    "Assessment": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "LessonID",
+    "TeacherID",
+    "ClassID",
+    "Subject",
+    "LessonDetails",
+    "Date",
+    "LearningObjectives",
+    "Assessment"
+  ],
+  "additionalProperties": false
+}

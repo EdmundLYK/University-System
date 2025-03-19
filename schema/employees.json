@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "employee_id": {
+      "type": "integer"
+    },
+    "name": {
+      "type": "string"
+    },
+    "contact": {
+      "type": "string"
+    },
+    "position": {
+      "type": "string"
+    },
+    "username": {
+      "type": "string"
+    },
+    "password": {
+      "type": "string"
+    },
+    "role": {
+      "type": "string",
+      "enum": ["admin", "teacher"]
+    }
+  },
+  "required": [
+    "employee_id",
+    "name",
+    "contact",
+    "position",
+    "username",
+    "password",
+    "role"
+  ],
+  "additionalProperties": false
+}

@@ -1,0 +1,6 @@
+tkinter
+pandas
+matplotlib
+numpy
+scipy
+Pillow
