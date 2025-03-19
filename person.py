@@ -26,6 +26,9 @@ class Admin:
 
     def assign_teacher_to_class(self, class_id, teacher_id):
         self.school.assign_teacher_to_class( class_id, teacher_id)
+    
+    def analysis_report(self, class_id):
+        return self.school.analysis_report(class_id)
 
 class Teacher:
     def __init__(self, school, username):
@@ -58,6 +61,9 @@ class Teacher:
     
     def attendance_report(self, class_id, date):
         return self.school.attendance_report(class_id, date)
+    
+    def analysis_report(self, class_id):
+        return self.school.analysis_report(class_id)
 
     # implement delete function for all
     # implement delete function for all

@@ -1,6 +1,6 @@
 classID,TeacherID,ClassName,Date,Duration,MaxStudents,Subject
-1,4.0,,,,,
-2,3.0,,,,,
-3,4.0,,,,,
+1,4.0,physic,2025-3-19,60,15.0,physic
+2,3.0,bio,2025-3-19,45,20.0,biology
+3,4.0,chemi,2025-3-19,60,20.0,chemy
 4,2.0,,,,,
 2,2.0,,,,,

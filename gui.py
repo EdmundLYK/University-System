@@ -959,19 +959,37 @@ class AttendanceManagementFrame(tk.Frame):
         FormWindow(self, "Mark Attendance", fields, submit)
     
     def view_attendance(self):
+        # New function to generate the attendance report
         fields = [
-            ("Class Name", ""),
+            ("Class ID", ""),
             ("Date (YYYY-MM-DD)", "")
         ]
         
         def submit(values):
-            # This would filter the attendance display based on class and date
-            messagebox.showinfo("Info", f"Viewing attendance for {values['Class Name']} on {values['Date (YYYY-MM-DD)']}")
-            # Implementation would depend on your actual data structure
-            self.display_attendance_data()
+            try:
+                class_id = int(values["Class ID"])
+            except ValueError:
+                messagebox.showerror("Error", "Class ID must be an integer.")
+                return False
+            
+            date_str = values["Date (YYYY-MM-DD)"]
+            # Call the attendance_report method from the school object
+            report = self.teacher.school.attendance_report(class_id, date_str)
+            
+            if report is None:
+                messagebox.showinfo("No Data", "No attendance data found for the given class and date.")
+            else:
+                # Create a new window to display the report
+                report_window = tk.Toplevel(self)
+                report_window.title("Attendance Report")
+                st = ScrolledText(report_window, font=("Consolas", 10))
+                st.pack(fill="both", expand=True)
+                st.insert(tk.END, report.to_string())
+                st.config(state=tk.DISABLED)
+            
             return True
         
-        FormWindow(self, "View Attendance", fields, submit)
+        FormWindow(self, "Generate Attendance Report", fields, submit)
 
 class StudentAssessmentFrame(tk.Frame):
     def __init__(self, parent, teacher):

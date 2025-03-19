@@ -180,21 +180,31 @@ class School:
         self.save_data()
 
     def update_class_details(self, class_id, teacher_id, class_name, date, duration, max_students, subject):
+        # First check if the teacher exists
         if teacher_id not in self.employees['employee_id'].values:
             return False
-        index = self.employees[self.employees['employee_id'] == teacher_id].index[0]
-
+        
+        # Then find the row in schedules where classID matches
+        if class_id not in self.schedules['classID'].values:
+            return False
+        
+        # Get the index of the class in the schedules DataFrame
+        class_index = self.schedules[self.schedules['classID'] == class_id].index[0]
+        
+        # Update the fields if they are provided
         if class_name:
-            self.schedules.at[index, 'ClassName'] = class_name
+            self.schedules.at[class_index, 'ClassName'] = class_name
         if date:
-            self.schedules.at[index, 'Date'] = date
+            self.schedules.at[class_index, 'Date'] = date
         if duration:
-            self.schedules.at[index, 'Duration'] = duration
+            self.schedules.at[class_index, 'Duration'] = duration
         if max_students:
-            self.schedules.at[index, 'MaxStudents'] = max_students
+            self.schedules.at[class_index, 'MaxStudents'] = max_students
         if subject:
-            self.schedules.at[index, 'Subject'] = subject
+            self.schedules.at[class_index, 'Subject'] = subject
+        
         self.save_data()
+        return True
 
     def add_lesson_plan(self, teacher_id, class_id, subject, lesson_details, date, learning_objectives, assessment):
         new_id = 1 if self.lesson_plan.empty else self.lesson_plan['LessonID'].max() + 1
@@ -305,3 +315,68 @@ class School:
         self.students = pd.concat([self.students, new_students_df], ignore_index=True)
         self.save_data()
         return new_records
+    
+    def analysis_report(self, class_id):
+        """
+        Generate an analysis report for a specific class_id, including:
+        - Attendance statistics (average attendance rate, standard deviation)
+        - Student marks statistics (average marks, standard deviation)
+        
+        Args:
+            class_id: The ID of the class to analyze
+            
+        Returns:
+            A dictionary containing the analysis results
+        """
+        report = {
+            'class_id': class_id,
+            'attendance': {
+                'count': 0,
+                'present_rate': 0,
+                'std_dev': 0,
+            },
+            'marks': {
+                'count': 0,
+                'average': 0,
+                'std_dev': 0,
+            }
+        }
+        
+        try:
+            # Get class name
+            class_info = self.schedules[self.schedules['classID'] == class_id]
+            if not class_info.empty:
+                report['class_name'] = class_info.iloc[0]['ClassName']
+            
+            # Analyze attendance
+            attendance_data = self.attendance[self.attendance['ClassID'] == class_id]
+            if not attendance_data.empty:
+                # Convert status to numeric (1 for present, 0 for absent)
+                attendance_data['numeric_status'] = attendance_data['Status'].apply(
+                    lambda x: 1 if x.lower() == 'present' else 0
+                )
+                
+                report['attendance']['count'] = len(attendance_data)
+                report['attendance']['present_rate'] = attendance_data['numeric_status'].mean() * 100
+                report['attendance']['std_dev'] = attendance_data['numeric_status'].std() * 100
+            
+            # Analyze student marks
+            # Get students in this class
+            class_students = self.students[self.students['class'] == class_id]
+            if not class_students.empty:
+                # Filter out rows where marks is NaN or None
+                marks_data = class_students['marks'].dropna()
+                
+                # Convert marks to numeric values
+                marks_data = pd.to_numeric(marks_data, errors='coerce').dropna()
+                
+                if not marks_data.empty:
+                    report['marks']['count'] = len(marks_data)
+                    report['marks']['average'] = marks_data.mean()
+                    report['marks']['std_dev'] = marks_data.std()
+        
+        except Exception as e:
+            report['error'] = str(e)
+        
+        return report
+
