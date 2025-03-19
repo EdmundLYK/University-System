@@ -39,7 +39,8 @@ class School:
             ('csv/employees.csv', 'employees'),
             ('csv/students.csv', 'students'),
             ('csv/attendance.csv', 'attendance'),
-            ('csv/schedules.csv', 'schedules')
+            ('csv/schedules.csv', 'schedules'),
+            ('csv/lesson_plan.csv', 'lesson_plan')
         ]:
             if os.path.exists(file):
                 setattr(self, attr, pd.read_csv(file))
@@ -50,6 +51,7 @@ class School:
         self.students.to_csv('csv/students.csv', index=False)
         self.attendance.to_csv('csv/attendance.csv', index=False)
         self.schedules.to_csv('csv/schedules.csv', index=False)
+        self.lesson_plan.to_csv('csv/lesson_plan.csv', index=False)
 
     def add_employee(self, name, contact, position, username=None, password=None):
         new_id = 1 if self.employees.empty else self.employees['employee_id'].max() + 1
