@@ -1,5 +1,6 @@
 from curses.panel import bottom_panel
 import tkinter as tk
+from tkinter import ttk
 from tkinter import messagebox
 from tkinter import Canvas, Entry, Button, PhotoImage
 from tkinter import filedialog
@@ -1080,15 +1081,93 @@ class StudentAssessmentFrame(tk.Frame):
     
     def view_class_report(self):
         fields = [
-            ("Class Name", "")
+            ("Class ID", "")
         ]
         
         def submit(values):
-            messagebox.showinfo("Info", f"Generating report for {values['Class Name']}")
-            # Implementation would depend on your actual data structure
-            return True
+            try:
+                class_id = int(values["Class ID"])
+                
+                # Generate the report
+                report = self.teacher.analysis_report(class_id)
+                
+                if 'error' in report:
+                    messagebox.showerror("Error", f"Failed to generate report: {report['error']}")
+                    return False
+                
+                # Create a new window to display the report
+                report_window = tk.Toplevel()
+                report_window.title(f"Analysis Report for {report.get('class_name', f'Class {class_id}')}")
+                report_window.geometry("800x600")
+                
+                # Create a notebook for tabs
+                notebook = ttk.Notebook(report_window)
+                notebook.pack(fill="both", expand=True, padx=10, pady=10)
+                
+                # Summary tab
+                summary_tab = tk.Frame(notebook)
+                notebook.add(summary_tab, text="Summary")
+                
+                # Display summary information
+                summary_text = (
+                    f"Class: {report.get('class_name', f'Class {class_id}')}\n\n"
+                    f"Attendance Statistics:\n"
+                    f"  - Total Records: {report['attendance']['count']}\n"
+                    f"  - Present Rate: {report['attendance']['present_rate']:.2f}%\n"
+                    f"  - Standard Deviation: {report['attendance']['std_dev']:.2f}%\n\n"
+                    f"Marks Statistics:\n"
+                    f"  - Total Students: {report['marks']['count']}\n"
+                    f"  - Average Mark: {report['marks']['average']:.2f}\n"
+                    f"  - Standard Deviation: {report['marks']['std_dev']:.2f}"
+                )
+                
+                summary_label = tk.Label(summary_tab, text=summary_text, justify="left", 
+                                        font=("Arial", 12), padx=20, pady=20)
+                summary_label.pack(anchor="nw")
+                
+                # Display summary plot if available
+                if 'summary' in report['plots']:
+                    summary_img = tk.PhotoImage(file=report['plots']['summary'])
+                    summary_img_label = tk.Label(summary_tab, image=summary_img)
+                    summary_img_label.image = summary_img  # Keep a reference to prevent garbage collection
+                    summary_img_label.pack(pady=10)
+                
+                # Attendance tab
+                if 'attendance' in report['plots']:
+                    attendance_tab = tk.Frame(notebook)
+                    notebook.add(attendance_tab, text="Attendance")
+                    
+                    attendance_img = tk.PhotoImage(file=report['plots']['attendance'])
+                    attendance_img_label = tk.Label(attendance_tab, image=attendance_img)
+                    attendance_img_label.image = attendance_img  # Keep a reference
+                    attendance_img_label.pack(pady=10)
+                
+                # Marks tab
+                if 'marks' in report['plots']:
+                    marks_tab = tk.Frame(notebook)
+                    notebook.add(marks_tab, text="Marks")
+                    
+                    marks_img = tk.PhotoImage(file=report['plots']['marks'])
+                    marks_img_label = tk.Label(marks_tab, image=marks_img)
+                    marks_img_label.image = marks_img  # Keep a reference
+                    marks_img_label.pack(pady=10)
+                
+                # Ensure the window comes to the front
+                report_window.lift()
+                report_window.attributes('-topmost', True)
+                report_window.after_idle(report_window.attributes, '-topmost', False)
+                
+                # Focus on the window
+                report_window.focus_force()
+                
+                return True
+            except Exception as e:
+                messagebox.showerror("Error", f"Failed to generate report: {str(e)}")
+                return False
         
-        FormWindow(self, "View Class Report", fields, submit)
+        FormWindow(self, "Generate Analysis Report", fields, submit)
+
+
 
 class ProfileManagementFrame(tk.Frame):
     def __init__(self, parent, teacher):

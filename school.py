@@ -1,5 +1,8 @@
 import pandas as pd
 import os
+import matplotlib.pyplot as plt
+import numpy as np
+import os
 import csv
 
 class School:
@@ -321,13 +324,19 @@ class School:
         Generate an analysis report for a specific class_id, including:
         - Attendance statistics (average attendance rate, standard deviation)
         - Student marks statistics (average marks, standard deviation)
+        - Plots for attendance and marks distribution
         
         Args:
             class_id: The ID of the class to analyze
             
         Returns:
-            A dictionary containing the analysis results
+            A dictionary containing the analysis results and paths to saved plots
         """
+        
+        
+        # Create reports directory if it doesn't exist
+        os.makedirs('reports', exist_ok=True)
+        
         report = {
             'class_id': class_id,
             'attendance': {
@@ -339,7 +348,8 @@ class School:
                 'count': 0,
                 'average': 0,
                 'std_dev': 0,
-            }
+            },
+            'plots': {}
         }
         
         try:
@@ -347,6 +357,8 @@ class School:
             class_info = self.schedules[self.schedules['classID'] == class_id]
             if not class_info.empty:
                 report['class_name'] = class_info.iloc[0]['ClassName']
+            else:
+                report['class_name'] = f"Class {class_id}"
             
             # Analyze attendance
             attendance_data = self.attendance[self.attendance['ClassID'] == class_id]
@@ -359,6 +371,37 @@ class School:
                 report['attendance']['count'] = len(attendance_data)
                 report['attendance']['present_rate'] = attendance_data['numeric_status'].mean() * 100
                 report['attendance']['std_dev'] = attendance_data['numeric_status'].std() * 100
+                
+                # Plot attendance data
+                plt.figure(figsize=(10, 6))
+                
+                # Attendance over time
+                if 'Date' in attendance_data.columns:
+                    # Group by date and calculate attendance rate
+                    attendance_by_date = attendance_data.groupby('Date')['numeric_status'].mean() * 100
+                    
+                    plt.subplot(1, 2, 1)
+                    attendance_by_date.plot(kind='line', marker='o')
+                    plt.title('Attendance Rate Over Time')
+                    plt.xlabel('Date')
+                    plt.ylabel('Attendance Rate (%)')
+                    plt.grid(True)
+                    
+                    # Attendance distribution
+                    plt.subplot(1, 2, 2)
+                    labels = ['Present', 'Absent']
+                    counts = [
+                        (attendance_data['Status'].str.lower() == 'present').sum(),
+                        (attendance_data['Status'].str.lower() == 'absent').sum()
+                    ]
+                    plt.pie(counts, labels=labels, autopct='%1.1f%%', colors=['#4CAF50', '#F44336'])
+                    plt.title('Attendance Distribution')
+                
+                plt.tight_layout()
+                attendance_plot_path = f'reports/class_{class_id}_attendance.png'
+                plt.savefig(attendance_plot_path)
+                plt.close()
+                report['plots']['attendance'] = attendance_plot_path
             
             # Analyze student marks
             # Get students in this class
@@ -374,9 +417,92 @@ class School:
                     report['marks']['count'] = len(marks_data)
                     report['marks']['average'] = marks_data.mean()
                     report['marks']['std_dev'] = marks_data.std()
+                    
+                    # Plot marks distribution
+                    plt.figure(figsize=(10, 6))
+                    
+                    # Histogram of marks
+                    plt.subplot(1, 2, 1)
+                    plt.hist(marks_data, bins=10, color='#2196F3', edgecolor='black')
+                    plt.axvline(marks_data.mean(), color='red', linestyle='dashed', linewidth=2, 
+                            label=f'Mean: {marks_data.mean():.2f}')
+                    plt.title('Distribution of Student Marks')
+                    plt.xlabel('Marks')
+                    plt.ylabel('Number of Students')
+                    plt.legend()
+                    plt.grid(True)
+                    
+                    # Grade distribution
+                    plt.subplot(1, 2, 2)
+                    # Define grade ranges
+                    grade_ranges = [
+                        (0, 40, 'F'),
+                        (40, 50, 'D'),
+                        (50, 60, 'C'),
+                        (60, 70, 'B'),
+                        (70, 80, 'B+'),
+                        (80, 90, 'A'),
+                        (90, 101, 'A+')
+                    ]
+                    
+                    grades = []
+                    for mark in marks_data:
+                        for low, high, grade in grade_ranges:
+                            if low <= mark < high:
+                                grades.append(grade)
+                                break
+                    
+                    grade_counts = {}
+                    for grade in set(grades):
+                        grade_counts[grade] = grades.count(grade)
+                    
+                    # Sort grades in proper order
+                    sorted_grades = []
+                    sorted_counts = []
+                    for _, _, grade in grade_ranges:
+                        if grade in grade_counts:
+                            sorted_grades.append(grade)
+                            sorted_counts.append(grade_counts[grade])
+                    
+                    plt.bar(sorted_grades, sorted_counts, color='#FF9800')
+                    plt.title('Grade Distribution')
+                    plt.xlabel('Grade')
+                    plt.ylabel('Number of Students')
+                    plt.grid(True, axis='y')
+                    
+                    plt.tight_layout()
+                    marks_plot_path = f'reports/class_{class_id}_marks.png'
+                    plt.savefig(marks_plot_path)
+                    plt.close()
+                    report['plots']['marks'] = marks_plot_path
+                    
+                    # Create a summary plot
+                    plt.figure(figsize=(12, 8))
+                    plt.suptitle(f"Analysis Report for {report['class_name']} (ID: {class_id})", fontsize=16)
+                    
+                    # Add text summary
+                    summary_text = (
+                        f"Attendance Statistics:\n"
+                        f"  - Total Records: {report['attendance']['count']}\n"
+                        f"  - Present Rate: {report['attendance']['present_rate']:.2f}%\n"
+                        f"  - Standard Deviation: {report['attendance']['std_dev']:.2f}%\n\n"
+                        f"Marks Statistics:\n"
+                        f"  - Total Students: {report['marks']['count']}\n"
+                        f"  - Average Mark: {report['marks']['average']:.2f}\n"
+                        f"  - Standard Deviation: {report['marks']['std_dev']:.2f}"
+                    )
+                    
+                    plt.figtext(0.1, 0.5, summary_text, fontsize=12, 
+                            bbox=dict(facecolor='#E3F2FD', alpha=0.5))
+                    
+                    summary_plot_path = f'reports/class_{class_id}_summary.png'
+                    plt.savefig(summary_plot_path)
+                    plt.close()
+                    report['plots']['summary'] = summary_plot_path
         
         except Exception as e:
             report['error'] = str(e)
         
         return report
+
 
