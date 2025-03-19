@@ -1,2 +1,4 @@
-AttendanceID,ClassID,StudentID,Date,Status
-
+AttendanceID,ClassID,Date,StudentID,Status
+1,1,2025-12-12,1,present
+2,2,2025-12-12,2,present
+3,1,2025-12-12,2,present
