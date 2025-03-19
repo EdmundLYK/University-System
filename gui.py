@@ -333,7 +333,7 @@ class EmployeeManagementFrame(tk.Frame):
         tk.Button(button_panel, text="Remove Employee", font=btn_font, command=self.remove_employee).grid(row=0, column=2, padx=5, pady=5)
         
         # Add refresh button
-        refresh_btn = tk.Button(button_panel, text="🔄 Refresh", font=btn_font, bg="#4CAF50", fg="white", 
+        refresh_btn = tk.Button(button_panel, text="🔄", font=btn_font, bg="#4CAF50", fg="white", 
                               command=self.display_employee_data)
         refresh_btn.grid(row=0, column=3, padx=5, pady=5)
         
@@ -470,7 +470,7 @@ class StudentManagementFrame(tk.Frame):
         import_btn.grid(row=0, column=3, padx=5, pady=5)
         
         # Add refresh button
-        refresh_btn = tk.Button(button_panel, text="🔄 Refresh", font=btn_font, bg="#4CAF50", fg="white", 
+        refresh_btn = tk.Button(button_panel, text="🔄", font=btn_font, bg="#4CAF50", fg="white", 
                               command=self.display_student_data)
         refresh_btn.grid(row=0, column=4, padx=5, pady=5)
         
@@ -625,12 +625,12 @@ class ClassManagementFrame(tk.Frame):
           
            # New Generate Report button
         tk.Button(button_panel, text="Generate Report", font=btn_font, 
-                 command=self.generate_report).grid(row=0, column=2, padx=5, pady=5)
+                 command=self.generate_report).grid(row=0, column=1, padx=5, pady=5)
         
         # Add refresh button
-        refresh_btn = tk.Button(button_panel, text="🔄 Refresh", font=btn_font, bg="#4CAF50", fg="white", 
+        refresh_btn = tk.Button(button_panel, text="🔄", font=btn_font, bg="#4CAF50", fg="white", 
                               command=self.display_class_schedules)
-        refresh_btn.grid(row=0, column=1, padx=5, pady=5)
+        refresh_btn.grid(row=0, column=2, padx=5, pady=5)
         
         # Data view panel
         self.data_panel = tk.Frame(self, bg="#FFFFFF")
@@ -890,7 +890,7 @@ class AttendanceManagementFrame(tk.Frame):
         tk.Button(button_panel, text="View Attendance Records", font=btn_font, command=self.view_attendance).grid(row=0, column=1, padx=5, pady=5)
         
         # Add refresh button
-        refresh_btn = tk.Button(button_panel, text="🔄 Refresh", font=btn_font, bg="#4CAF50", fg="white", 
+        refresh_btn = tk.Button(button_panel, text="🔄", font=btn_font, bg="#4CAF50", fg="white", 
                               command=self.display_attendance_data)
         refresh_btn.grid(row=0, column=2, padx=5, pady=5)
         
@@ -989,7 +989,7 @@ class StudentAssessmentFrame(tk.Frame):
         tk.Button(button_panel, text="View Class Report", font=btn_font, command=self.view_class_report).grid(row=0, column=1, padx=5, pady=5)
         
         # Add refresh button
-        refresh_btn = tk.Button(button_panel, text="🔄 Refresh", font=btn_font, bg="#4CAF50", fg="white", 
+        refresh_btn = tk.Button(button_panel, text="🔄", font=btn_font, bg="#4CAF50", fg="white", 
                               command=self.display_marks_data)
         refresh_btn.grid(row=0, column=2, padx=5, pady=5)
         
