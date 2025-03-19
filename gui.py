@@ -2,6 +2,7 @@ from curses.panel import bottom_panel
 import tkinter as tk
 from tkinter import messagebox
 from tkinter import Canvas, Entry, Button, PhotoImage
+from tkinter import filedialog
 from tkinter.scrolledtext import ScrolledText
 from pathlib import Path
 import pandas as pd  # For reading CSV files
@@ -21,7 +22,7 @@ class FormWindow(tk.Toplevel):
         self.title(title)
         
         # Set window size and center it
-        width, height = 1000, 600
+        width, height = 1000, 550
         x = (self.winfo_screenwidth() - width) // 2
         y = (self.winfo_screenheight() - height) // 2
         self.geometry(f"{width}x{height}+{x}+{y}")
@@ -463,10 +464,15 @@ class StudentManagementFrame(tk.Frame):
         tk.Button(button_panel, text="Update Student", font=btn_font, command=self.update_student).grid(row=0, column=1, padx=5, pady=5)
         tk.Button(button_panel, text="Remove Student", font=btn_font, command=self.remove_student).grid(row=0, column=2, padx=5, pady=5)
         
+        # Add Import Students button
+        import_btn = tk.Button(button_panel, text="Import Students", font=btn_font, bg="#007BFF", fg="white", 
+                             command=self.import_students)
+        import_btn.grid(row=0, column=3, padx=5, pady=5)
+        
         # Add refresh button
         refresh_btn = tk.Button(button_panel, text="🔄 Refresh", font=btn_font, bg="#4CAF50", fg="white", 
                               command=self.display_student_data)
-        refresh_btn.grid(row=0, column=3, padx=5, pady=5)
+        refresh_btn.grid(row=0, column=4, padx=5, pady=5)
         
         # Data view panel
         self.data_panel = tk.Frame(self, bg="#FFFFFF")
@@ -474,7 +480,30 @@ class StudentManagementFrame(tk.Frame):
         
         # Display student data by default
         self.display_student_data()
-    
+        
+    # Add the import_students method
+    def import_students(self):
+        file_path = filedialog.askopenfilename(
+            title="Select CSV File",
+            filetypes=[("CSV Files", "*.csv"), ("All Files", "*.*")]
+        )
+        
+        if not file_path:  # User canceled the file dialog
+            return
+            
+        try:
+            # Use the import_students_csv method from school class
+            new_records = self.admin.school.import_students_csv(file_path)
+            
+            # Show success message with count of imported records
+            messagebox.showinfo("Import Successful", f"Successfully imported {len(new_records)} student records.")
+            
+            # Refresh the display
+            self.display_student_data()
+            
+        except Exception as e:
+            messagebox.showerror("Import Error", str(e))
+            
     def display_student_data(self):
     # Clear any existing widgets
         for widget in self.data_panel.winfo_children():
@@ -593,6 +622,10 @@ class ClassManagementFrame(tk.Frame):
         # Changed from pack to grid to align with the refresh button
         tk.Button(button_panel, text="Assign Teacher to Class", font=btn_font, 
                  command=self.assign_teacher).grid(row=0, column=0, padx=5, pady=5)
+          
+           # New Generate Report button
+        tk.Button(button_panel, text="Generate Report", font=btn_font, 
+                 command=self.generate_report).grid(row=0, column=2, padx=5, pady=5)
         
         # Add refresh button
         refresh_btn = tk.Button(button_panel, text="🔄 Refresh", font=btn_font, bg="#4CAF50", fg="white", 
@@ -657,6 +690,39 @@ class ClassManagementFrame(tk.Frame):
             return True
         
         FormWindow(self, "Assign Teacher", fields, submit)
+        
+    def generate_report(self):
+        # New function to generate the attendance report
+        fields = [
+            ("Class ID", ""),
+            ("Date (YYYY-MM-DD)", "")
+        ]
+        
+        def submit(values):
+            try:
+                class_id = int(values["Class ID"])
+            except ValueError:
+                messagebox.showerror("Error", "Class ID must be an integer.")
+                return False
+            
+            date_str = values["Date (YYYY-MM-DD)"]
+            # Call the attendance_report method from the school object
+            report = self.admin.school.attendance_report(class_id, date_str)
+            
+            if report is None:
+                messagebox.showinfo("No Data", "No attendance data found for the given class and date.")
+            else:
+                # Create a new window to display the report
+                report_window = tk.Toplevel(self)
+                report_window.title("Attendance Report")
+                st = ScrolledText(report_window, font=("Consolas", 10))
+                st.pack(fill="both", expand=True)
+                st.insert(tk.END, report.to_string())
+                st.config(state=tk.DISABLED)
+            
+            return True
+        
+        FormWindow(self, "Generate Attendance Report", fields, submit)
 
 # ------------------ Teacher Dashboard ------------------
 class TeacherDashboard(tk.Frame):
@@ -871,7 +937,7 @@ class AttendanceManagementFrame(tk.Frame):
             ("Class Name", ""),
             ("Date (YYYY-MM-DD)", ""),
             ("Student ID", ""),
-            ("Status (present/absent)", "")
+            ("Status", "")
         ]
         
         def submit(values):

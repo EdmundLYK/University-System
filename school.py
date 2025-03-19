@@ -97,6 +97,8 @@ class School:
         self.students = pd.concat([self.students, pd.DataFrame([student_details])], ignore_index=True)
         self.save_data()
 
+    
+
     def remove_student(self, student_id):
         self.students = self.students[self.students['student_id'] != student_id]
         self.save_data()
@@ -140,7 +142,7 @@ class School:
     
     def mark_attendance(self, class_id, student_id, date, status):
         new_id = 1 if self.attendance.empty else self.attendance['AttendanceID'].max() + 1
-        attendance_record = {'AttendanceID': new_id,'ClassID': class_id, 'StudentID': student_id, 'Date': date, 'status': status}
+        attendance_record = {'AttendanceID': new_id,'ClassID': class_id, 'StudentID': student_id, 'Date': date, 'Status': status}
         self.attendance = pd.concat([self.attendance, pd.DataFrame([attendance_record])], ignore_index=True)
         self.save_data()
     
@@ -265,3 +267,43 @@ class School:
             return enhanced_report
     
         return attendance_data
+    
+    def import_students_csv(self, file_path):
+        """
+        Import student records from a CSV file and append them to the existing students DataFrame.
+        The CSV must contain at least the following columns: 'name', 'age', 'class'.
+        Optionally, a 'marks' column can also be included.
+        """
+        try:
+            df_import = pd.read_csv(file_path)
+        except Exception as e:
+            raise ValueError(f"Error reading CSV file: {e}")
+
+        # Ensure required columns exist
+        required_cols = ['name', 'age', 'class']
+        for col in required_cols:
+            if col not in df_import.columns:
+                raise ValueError(f"Missing required column: {col}")
+
+        # Determine the starting student_id based on existing records
+        next_id = 1 if self.students.empty else int(self.students['student_id'].max()) + 1
+        new_records = []
+
+        # Iterate over each row in the imported DataFrame
+        for _, row in df_import.iterrows():
+            student_record = {
+                'student_id': next_id,
+                'name': row['name'],
+                'age': row['age'],
+                'class': row['class'],
+                # Use the 'marks' column if available; otherwise, set as None
+                'marks': row['marks'] if 'marks' in df_import.columns else None
+            }
+            new_records.append(student_record)
+            next_id += 1
+
+        # Append the new records and save the data
+        new_students_df = pd.DataFrame(new_records)
+        self.students = pd.concat([self.students, new_students_df], ignore_index=True)
+        self.save_data()
+        return new_records
