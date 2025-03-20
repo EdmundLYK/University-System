@@ -365,20 +365,6 @@ class School:
         return new_records
     
     def analysis_report(self, class_id):
-        """
-        Generate an analysis report for a specific class_id, including:
-        - Attendance statistics (average attendance rate, standard deviation)
-        - Student marks statistics (average marks, standard deviation)
-        - Plots for attendance and marks distribution
-        
-        Args:
-            class_id: The ID of the class to analyze
-            
-        Returns:
-            A dictionary containing the analysis results and paths to saved plots
-        """
-        
-        
         # Create reports directory if it doesn't exist
         os.makedirs('reports', exist_ok=True)
         
