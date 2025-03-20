@@ -6,8 +6,8 @@ from tkinter import Canvas, Entry, Button, PhotoImage
 from tkinter import filedialog
 from tkinter.scrolledtext import ScrolledText
 from pathlib import Path
-import pandas as pd  # For reading CSV files
-from person import Admin, Teacher  # Ensure these classes are defined
+import pandas as pd  
+from person import Admin, Teacher  
 
 # ------------------ Paths and Asset Helper ------------------
 OUTPUT_PATH = Path(__file__).parent
