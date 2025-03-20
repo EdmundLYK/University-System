@@ -41,7 +41,7 @@ class SchoolApp(tk.Tk):
             self.current_frame.destroy()
         self.current_frame = TeacherDashboard(self, teacher)
         self.current_frame.pack(expand=True)
-
+# This is for #Jostrix and #EdmundLYK
 if __name__ == "__main__":
     app = SchoolApp()
     app.mainloop()

@@ -13,6 +13,7 @@ from person import Admin, Teacher
 OUTPUT_PATH = Path(__file__).parent
 ASSETS_PATH = OUTPUT_PATH / "assets"
 
+# This is made for #Jostrix and #EdmundLYK
 def relative_to_assets(path: str) -> Path:
     return ASSETS_PATH / Path(path)
 
