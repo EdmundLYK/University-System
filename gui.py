@@ -1053,7 +1053,7 @@ class AttendanceManagementFrame(tk.Frame):
                 messagebox.showerror("Error", "Status must be 'present' or 'absent'.")
                 return False
             
-            self.teacher.mark_attendance(values["Class ID"], values["Date (YYYY-MM-DD)"], std_id, values["Status"])
+            self.teacher.mark_attendance(values["Class ID"], std_id, values["Date (YYYY-MM-DD)"], values["Status"])
             messagebox.showinfo("Success", "Attendance marked.")
             self.display_attendance_data()  # Refresh after making changes
             return True
