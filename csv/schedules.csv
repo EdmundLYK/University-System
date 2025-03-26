@@ -1,5 +1,5 @@
 classID,TeacherID,ClassName,Date,Duration,MaxStudents,Subject
-1,7.0,physic,2025-12-12,60.0,50.0,physic
+1,8.0,physic,2025-12-12,60.0,50.0,physic
 2,3.0,bio,2025-03-19,45.0,20.0,biology
 3,4.0,chemi,2025-03-19,60.0,20.0,chemy
 1,7.0,physic,2025-12-13,120.0,50.0,physic
